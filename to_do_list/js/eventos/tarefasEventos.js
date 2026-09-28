@@ -1,4 +1,4 @@
-import { domPerfil, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa } from "../dom/tarefasDom.js";
+import { domPerfil, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa} from "../dom/tarefasDom.js";
 import { carregarTarefas, adicionarTarefa, salvarTarefa, excluirTarefa, atualizarPrioridade, concluirTarefa } from "../servicos/tarefasService.js";
 import { sairUsuarioService, tratarEstadoAutenticacao } from "../servicos/authService.js";
 import { validarTexto, validarTitulo } from "../validacao/validacao.js";
@@ -19,6 +19,11 @@ try {
 }
 
 function prepararTarefasParaRenderizar() {
+    if (tarefas.length === 0){
+        mostrarEstadoTarefa('Você ainda não possui nenhuma tarefa.')
+        return
+    }
+
     const tarefasFiltradasEordenadas = filtrarTarefas(tarefas, pegarFiltros())
 
     if (tarefasFiltradasEordenadas.length === 0) {
@@ -51,8 +56,6 @@ async function tentarAdicionarTarefa() {
     const titulo = domPerfil.titulo.value
     const descricao = domPerfil.descricao.value
 
-    alterarEstadoBotao(domPerfil.btAdicionar, true, 'Adicionando...')
-
     const erroTitulo = validarTitulo(titulo)
     const erroTexto = validarTexto(descricao)
 
@@ -70,16 +73,15 @@ async function tentarAdicionarTarefa() {
 
     try {
         await adicionarTarefa(titulo, descricao)
-        
-        alterarEstadoBotao(domPerfil.btAdicionar, false, 'Adicionar')
 
         prepararTarefasParaRenderizar()
 
         limparValueElemento(domPerfil.titulo)
         limparValueElemento(domPerfil.descricao)
     } catch (erro) {
-        alterarEstadoBotao(domPerfil.btAdicionar, false, 'Adicionar')
         mostrarMensagemErro(domPerfil.mensagemErroTitulo, tratarErro(erro))
+    } finally {
+        alterarEstadoBotao(domPerfil.btAdicionar, false, 'Adicionar')
     }
 }
 
@@ -88,11 +90,10 @@ domPerfil.btSair.addEventListener('click', async () => {
 
     try {
         await sairUsuarioService()
-
-        alterarEstadoBotao(domPerfil.btSair, false, 'Sair')
     } catch (erro) {
-        alterarEstadoBotao(domPerfil.btSair, false, 'Sair')
         mostrarMensagemErro(domPerfil.msgLogout, tratarErro(erro))
+    } finally {
+        alterarEstadoBotao(domPerfil.btSair, false, 'Sair')
     }
     
 })
@@ -198,16 +199,12 @@ async function tentarSalvarTarefa(id, elemento) {
 
     alterarEstadoBotao(salvar, true, 'Salvando...')
 
-    const textoAnterior = elementoConteudo.textContent
-
     const tarefa = {
         [property]: input.value
     }
 
     try {
         await salvarTarefa(id, property, tarefa) 
-
-        alterarEstadoBotao(salvar, false, 'Salvar')
         
         elementoConteudo.textContent = tarefa[property]
 
@@ -219,8 +216,9 @@ async function tentarSalvarTarefa(id, elemento) {
         apagarMensagemErro(msgErro)
 
     } catch (erro) {
-        alterarEstadoBotao(salvar, false, 'Salvar')
         mostrarMensagemErro(msgErro, tratarErro(erro))
+    } finally {
+        alterarEstadoBotao(salvar, false, 'Salvar')
     }
 
     return
@@ -245,13 +243,21 @@ domPerfil.lista.addEventListener('change', async (evento) => {
         }
 
         const tarefaEncontrada = tarefas.find(tarefa => tarefa.id === id)
+
+        if (!tarefaEncontrada) {
+            return
+        }
+
         const prioridadeAnterior = tarefaEncontrada.prioridade
+        elemento.disabled = true
 
         try {
             await atualizarPrioridade(id, tarefa)
         } catch (erro) {
             elemento.value = prioridadeAnterior
             mostrarMensagemErro(msgErro, tratarErro(erro))
+        } finally {
+            elemento.disabled = false
         }
     }
 
@@ -264,15 +270,14 @@ domPerfil.lista.addEventListener('change', async (evento) => {
         try{
             await concluirTarefa(id, elemento.checked)
 
-            elemento.disabled = false
-
             prepararTarefasParaRenderizar()
 
             apagarMensagemErro(msgErro)
         } catch (erro) {
             elemento.checked = estadoAnterior 
-            elemento.disabled = false
             mostrarMensagemErro(msgErro, tratarErro(erro))
+        } finally {
+             elemento.disabled = false
         }
     }
 

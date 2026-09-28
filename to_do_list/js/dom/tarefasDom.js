@@ -110,15 +110,14 @@ function resetarFiltros() {
     domPerfil.filtroDtConclusao.value = 'todas'
     domPerfil.ordenarPor.value = 'status'
     domPerfil.ordem.value = 'pendentes'
+
+    atualizarOpcoesOrdem()
+
+    domPerfil.ordem.value = 'pendentes'
 }
 
 function renderizarTarefas(tarefas) {
     domPerfil.lista.innerHTML = ''
-
-    if (tarefas.length === 0){
-        mostrarEstadoTarefa('Você ainda não possui nenhuma tarefa.')
-        return
-    }
 
     limparMostrarEstadoTarefa()
 
