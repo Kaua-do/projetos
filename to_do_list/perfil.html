@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil</title>
+    <style>
+        * {
+            margin: 0px;
+            padding: 0px;
+        }
+
+        body {
+            margin: 10px;
+            background-color: rgb(226, 226, 226);
+        }
+
+        ul#lista {
+            list-style: none;
+            padding: 10px;
+            background-color: rgb(243, 243, 243);
+            border-radius: 10px;
+            box-shadow: 2px 1px 6px rgba(0, 0, 0, 0.37);
+        }
+
+        ul#lista li {
+            border: 3px solid chocolate;
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+
+        ul#lista div.container {
+            display: flex;
+            flex-direction: column;
+            padding: 5px 5px;
+            gap: 3px;
+        }
+
+        .propriedade, .divstatus {
+            display: flex;
+            gap: 5px;
+        }
+
+        .oculto {
+            display: none;
+        }
+
+        .div-checkbox {
+            display: flex;
+            margin: 5px 2px;
+            width: 100%;
+        }
+
+        .checkbox {
+            transform: scale(1.2);
+            width: 2%;
+        }
+
+        .msgerro-api {
+            width: 98%;
+            text-align: center;
+        }
+
+        .campo {
+            margin-bottom: 10px;
+        }
+
+        #adicionar {
+            margin-bottom: 10px;
+        }
+
+        
+
+        
+    </style>
+</head>
+<body>
+    <div id="barra">
+        <div class="campo">
+            <input type="text" id="titulo" placeholder="Título">
+            <p id="errotitulo" class="oculto"></p>
+        </div>
+        <div class="campo">
+            <input type="text" id="descricao" placeholder="Descrição">
+            <p id="errodescricao" class="oculto"></p>
+        </div>
+        <button id="adicionar">Adicionar</button>
+        <button id="logout">Sair</button>
+        <p id="msglogout"></p>
+        <p>Filtros</p>
+        <div id="containerfiltros">
+            <p>Status:</p>
+            <select id="selectstatusfiltros">
+                <option value="todas">Todas</option>
+                <option value="concluidas">Concluídas</option>
+                <option value="pendentes">Pendentes</option>
+            </select>
+
+            <p>Prioridade:</p>
+            <select id="selectprioridadefiltros">
+                <option value="todas">Todas</option>
+                <option value="alta">Alta</option>
+                <option value="media">Média</option>
+                <option value="baixa">Baixa</option>
+            </select>
+
+            <p>Data de criação:</p>
+            <select id="selectcriacaofiltros">
+                <option value="todas">Todas</option>
+                <option value="setedias">Últimos 7 dias</option>
+                <option value="trintadias">Últimos 30 dias</option>
+                <option value="noventadias">Últimos 90 dias</option>
+            </select>
+
+            <p>Data de conclusão:</p>
+            <select id="selectconclusaofiltros">
+                <option value="todas">Todas</option>
+                <option value="setedias">Últimos 7 dias</option>
+                <option value="trintadias">Últimos 30 dias</option>
+                <option value="noventadias">Últimos 90 dias</option>
+            </select>
+
+            <p>Ordenar por:</p>
+            <select id="selectordenarporfiltros">
+                <option value="nenhum">Nenhum</option>
+                <option value="status" selected>Status</option>
+                <option value="prioridade">Prioridade</option>
+                <option value="criacao">Data de criação</option>
+                <option value="conclusao">Data de conclusão</option>
+            </select>
+
+            <p>Ordem:</p>
+            <select id="selectordemfiltros">
+                <option class="opcum" value="pendentes">Pendentes</option>
+                <option class="opcdois" value="concluidas">Concluídas</option>
+            </select>
+            <button id="resetarfiltros">Resetar</button>
+        </div>
+    </div>
+    <div id="mostrarestadotarefa"></div>
+    <ul id="lista"></ul>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module" src="js/eventos/tarefasEventos.js"></script>
+</body>
+</html>

@@ -1,0 +1,313 @@
+import { formatarData } from "../utils/data.js"
+
+const domPerfil = {
+    titulo: document.querySelector('#titulo'),
+    descricao: document.querySelector('#descricao'),
+    btAdicionar: document.querySelector('#adicionar'),
+    btSair: document.querySelector('#logout'),
+    msgLogout: document.querySelector('#msglogout'),
+    lista: document.querySelector('#lista'),
+    mensagemErroTitulo: document.querySelector('#errotitulo'),
+    mensagemErroDescricao: document.querySelector('#errodescricao'),
+    containerDeFiltros: document.querySelector('#containerfiltros'),
+    btResetar: document.querySelector('#resetarfiltros'),
+    filtroStatus: document.querySelector('#selectstatusfiltros'),
+    filtroPrioridade: document.querySelector('#selectprioridadefiltros'),
+    filtroDtCriacao: document.querySelector('#selectcriacaofiltros'),
+    filtroDtConclusao: document.querySelector('#selectconclusaofiltros'),
+    ordenarPor: document.querySelector('#selectordenarporfiltros'),
+    ordem: document.querySelector('#selectordemfiltros'),
+    ordemOpcUm:document.querySelector('.opcum'),
+    ordemOpcDois: document.querySelector('.opcdois'),
+    mostradorEstadoTarefas: document.querySelector('#mostrarestadotarefa')
+}
+
+function alterarEstadoBotao(botao, desabilitado, texto) {
+    botao.disabled = desabilitado
+    botao.textContent = texto
+}
+
+function mostrarEstadoTarefa(mensagem) {
+    domPerfil.mostradorEstadoTarefas.textContent = mensagem
+}
+
+function limparMostrarEstadoTarefa() {
+    domPerfil.mostradorEstadoTarefas.textContent = ''
+}
+
+function adicionarNaLista(tarefa) {
+    const li = criarTarefaElemento(tarefa)
+    domPerfil.lista.appendChild(li)
+}
+
+function pegarFiltros() {
+    return {
+        status: domPerfil.filtroStatus.value,
+        prioridade: domPerfil.filtroPrioridade.value,
+        dtCriacao: domPerfil.filtroDtCriacao.value,
+        dtConclusao: domPerfil.filtroDtConclusao.value,
+        ordenarPor: domPerfil.ordenarPor.value,
+        ordem: domPerfil.ordem.value
+    }
+}
+
+function atualizarOpcoesOrdem() {
+    const opcoesOrdem = {
+            
+        status: {
+            opcUm: 'pendentes',
+            opcDois: 'concluidas',
+            textoUm: 'Pendentes',
+            textoDois: 'Concluídas'
+        },
+
+        prioridade: {
+            opcUm: 'maior',
+            opcDois: 'menor',
+            textoUm: 'Maior',
+            textoDois: 'Menor'
+        },
+
+        criacao: {
+            opcUm: 'recente',
+            opcDois: 'antigo',
+            textoUm: 'Mais recentes',
+            textoDois: 'Mais antigas'
+        },
+
+        conclusao: {
+            opcUm: 'recente',
+            opcDois: 'antigo',
+            textoUm: 'Mais recentes',
+            textoDois: 'Mais antigas'
+        }
+    }
+
+    const ordenarPor = domPerfil.ordenarPor.value
+    const opcUm = domPerfil.ordemOpcUm
+    const opcDois = domPerfil.ordemOpcDois
+
+    if (ordenarPor === 'nenhum') {
+        opcUm.value = 'nenhum'
+        opcUm.textContent = 'Nenhum'
+        opcDois.style.display = 'none'
+
+        return
+    }
+    opcDois.style.display = ''
+    
+    opcUm.value = opcoesOrdem[ordenarPor].opcUm
+    opcUm.textContent = opcoesOrdem[ordenarPor].textoUm
+
+    opcDois.value = opcoesOrdem[ordenarPor].opcDois
+    opcDois.textContent = opcoesOrdem[ordenarPor].textoDois
+}
+
+function resetarFiltros() {
+    domPerfil.filtroStatus.value = 'todas'
+    domPerfil.filtroPrioridade.value = 'todas'
+    domPerfil.filtroDtCriacao.value = 'todas'
+    domPerfil.filtroDtConclusao.value = 'todas'
+    domPerfil.ordenarPor.value = 'status'
+    domPerfil.ordem.value = 'pendentes'
+}
+
+function renderizarTarefas(tarefas) {
+    domPerfil.lista.innerHTML = ''
+
+    if (tarefas.length === 0){
+        mostrarEstadoTarefa('Você ainda não possui nenhuma tarefa.')
+        return
+    }
+
+    limparMostrarEstadoTarefa()
+
+    for (const tarefa of tarefas) {
+        adicionarNaLista(tarefa)
+    }
+}
+
+function criarTarefaElemento(tarefa) {
+    
+    const li = document.createElement('li')
+
+    li.dataset.id = tarefa.id
+
+    const div = document.createElement('div')
+    const divTitulo = document.createElement('div')
+    const divDescricao = document.createElement('div')
+    const divPrioridade = document.createElement('div')
+    const divStatus = document.createElement('div')
+    const divDtCriacao = document.createElement('div')
+    const divDtConclusao = document.createElement('div')
+
+    const spanPropriedadeTitulo = document.createElement('span')
+    const spanPropriedadeDescricao = document.createElement('span')
+    const spanPropriedadePrioridade = document.createElement('span')
+    const spanPropriedadeStatus = document.createElement('span')
+    const spanPropriedadeDtCriacao = document.createElement('span')
+    const spanPropriedadeDtConclusao = document.createElement('span')
+
+    spanPropriedadeTitulo.textContent = 'Título: '
+    spanPropriedadeDescricao.textContent = 'Descrição: '
+    spanPropriedadePrioridade.textContent = 'Prioridade: '
+    spanPropriedadeStatus.textContent = 'Status: '
+    spanPropriedadeDtCriacao.textContent = 'Criada em: '
+    spanPropriedadeDtConclusao.textContent = 'Concluída em: '
+
+    const spanTitulo = document.createElement('span')
+    const spanDescricao = document.createElement('span')
+
+    const selectPrioridade = document.createElement('select')
+    const prioridadeBaixa = document.createElement('option')
+    const prioridadeMedia = document.createElement('option')
+    const prioridadeAlta = document.createElement('option')
+
+    prioridadeBaixa.value = 'baixa'
+    prioridadeMedia.value = 'media'
+    prioridadeAlta.value = 'alta'
+
+    prioridadeBaixa.textContent = 'Baixa'
+    prioridadeMedia.textContent = 'Media'
+    prioridadeAlta.textContent = 'Alta'
+
+    const spanStatus = document.createElement('span')
+    const spanDtCriacao = document.createElement('span')
+    const spanDtConclusao = document.createElement('span')
+
+    spanTitulo.classList.add('conteudo')
+    spanDescricao.classList.add('conteudo')
+    selectPrioridade.classList.add('conteudoprioridade')
+    spanStatus.classList.add('conteudostatus')
+    spanDtCriacao.classList.add('conteudodtcriacao')
+    spanDtConclusao.classList.add('conteudodtconclusao')
+
+    selectPrioridade.appendChild(prioridadeBaixa)
+    selectPrioridade.appendChild(prioridadeMedia)
+    selectPrioridade.appendChild(prioridadeAlta)
+
+    spanTitulo.textContent = tarefa.titulo
+    spanDescricao.textContent = tarefa.descricao
+    selectPrioridade.value = tarefa.prioridade
+
+    if (tarefa.status) {
+        spanStatus.textContent = 'Concluída'
+    } else {
+        spanStatus.textContent = 'Pendente'
+    }
+    
+    spanDtCriacao.textContent = formatarData(tarefa.dtCriacao).replace(',', ' às ')
+    
+    const btEditarTitulo = document.createElement('button')
+    btEditarTitulo.textContent = 'Editar'
+    btEditarTitulo.classList.add('editar-propriedade')
+
+    const btEditarDescricao = document.createElement('button')
+    btEditarDescricao.textContent = 'Editar'
+    btEditarDescricao.classList.add('editar-propriedade')
+
+    const btSalvarTitulo = document.createElement('button')
+    btSalvarTitulo.textContent = 'Salvar'
+    btSalvarTitulo.classList.add('salvar')
+    btSalvarTitulo.classList.add('oculto')
+
+    const btSalvarDescricao = document.createElement('button')
+    btSalvarDescricao.textContent = 'Salvar'
+    btSalvarDescricao.classList.add('salvar')
+    btSalvarDescricao.classList.add('oculto')
+
+    const btExcluir = document.createElement('button')
+    btExcluir.classList.add('excluir')
+    btExcluir.textContent = 'Excluir'
+
+    const mensagemErroTitulo = document.createElement('p')
+    const mensagemErroDescricao = document.createElement('p')
+
+    mensagemErroTitulo.classList.add('msgerro')
+    mensagemErroTitulo.classList.add('oculto')
+    mensagemErroDescricao.classList.add('msgerro')
+    mensagemErroDescricao.classList.add('oculto')
+
+    div.classList.add('container')
+
+    divTitulo.appendChild(spanPropriedadeTitulo)
+    divTitulo.appendChild(spanTitulo)
+    divTitulo.appendChild(btEditarTitulo)
+    divTitulo.appendChild(btSalvarTitulo)
+    divTitulo.appendChild(mensagemErroTitulo)
+
+    divDescricao.appendChild(spanPropriedadeDescricao)
+    divDescricao.appendChild(spanDescricao)
+    divDescricao.appendChild(btEditarDescricao)
+    divDescricao.appendChild(btSalvarDescricao)
+    divDescricao.appendChild(mensagemErroDescricao)
+
+    divTitulo.classList.add('propriedade')
+    divTitulo.dataset.propriedade = 'titulo'
+
+    divDescricao.classList.add('propriedade')
+    divDescricao.dataset.propriedade = 'descricao'
+
+    div.appendChild(divTitulo)
+    div.appendChild(divDescricao)
+    divPrioridade.appendChild(spanPropriedadePrioridade)
+    divPrioridade.appendChild(selectPrioridade)
+
+    divStatus.appendChild(spanPropriedadeStatus)
+    divStatus.appendChild(spanStatus)
+
+    divDtCriacao.appendChild(spanPropriedadeDtCriacao)
+    divDtCriacao.appendChild(spanDtCriacao)
+
+    divDtConclusao.appendChild(spanPropriedadeDtConclusao)
+    divDtConclusao.appendChild(spanDtConclusao)
+
+    div.appendChild(divPrioridade)
+    div.appendChild(divStatus)
+    div.appendChild(divDtCriacao)
+
+    if (tarefa.dtConclusao) {
+        spanDtConclusao.textContent = formatarData(tarefa.dtConclusao).replace(',', ' às ')
+        div.appendChild(divDtConclusao)
+    }
+    
+    div.appendChild(btExcluir)
+
+    const divCheckbox = document.createElement('div')
+    divCheckbox.classList.add('div-checkbox')
+    const checkbox = document.createElement('input')
+    checkbox.type = 'checkbox'
+    checkbox.classList.add('checkbox')
+    checkbox.checked = tarefa.status
+    const msgErroApi = document.createElement('p')
+    msgErroApi.classList.add('msgerro-api')
+    msgErroApi.classList.add('oculto')
+    
+    divCheckbox.appendChild(checkbox)
+    divCheckbox.appendChild(msgErroApi)
+
+    li.appendChild(divCheckbox)
+    li.appendChild(div)
+
+    return li
+}
+
+function editarTarefa(div, elemento) {
+    const btSalvar = div.querySelector('.salvar')
+    const conteudo = div.querySelector('.conteudo')
+
+    conteudo.classList.add('oculto')
+    elemento.classList.add('oculto')
+
+    btSalvar.classList.remove('oculto')
+
+    const input = document.createElement('input')
+
+    input.classList.add('input-propriedade')
+
+    input.value = conteudo.textContent
+    
+    return input
+}
+
+export {domPerfil, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa}
