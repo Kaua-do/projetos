@@ -6,16 +6,21 @@
     <title>Cadastro/Login</title>
 </head>
 <body>
-    <input type="email" id="emailcadastro" placeholder="Email">
-    <input type="password" id="senhacadastro" placeholder="Senha">
-    <button id="cadastrar">Cadastrar</button>
+    <main>
+        <input type="text" id="nome" placeholder="Nome">
+        <input type="email" id="emailcadastro" placeholder="Email">
+        <input type="password" id="senhacadastro" placeholder="Senha">
+        <input type="password" id="confirmarsenhacadastro" placeholder="Confirmar Senha">
+        <p id="errocadastro"></p>
+        <button id="cadastrar">Cadastrar</button>
 
-    <input type="email" id="emaillogin" placeholder="Email">
-    <input type="password" id="senhalogin" placeholder="Senha">
-    <button id="entrar">Entrar</button>
-    <p id="errologin"></p>
-
+        <input type="email" id="emaillogin" placeholder="Email">
+        <input type="password" id="senhalogin" placeholder="Senha">
+        <button id="entrar">Entrar</button>
+        <p id="errologin"></p>
+    </main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="js/eventos/authEventos.js"></script>
+    <script type="module" src="js/eventos/authObserver.js"></script>
 </body>
 </html>

@@ -1,26 +1,43 @@
-import { domPerfil, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa} from "../dom/tarefasDom.js";
+import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista} from "../dom/tarefasDom.js";
+import { perfilDom, mostrarPerfil } from "../dom/perfilDom.js";
 import { carregarTarefas, adicionarTarefa, salvarTarefa, excluirTarefa, atualizarPrioridade, concluirTarefa } from "../servicos/tarefasService.js";
-import { sairUsuarioService, tratarEstadoAutenticacao } from "../servicos/authService.js";
+import { sairUsuarioService, verificarAcessoPagina } from "../servicos/authService.js";
 import { validarTexto, validarTitulo } from "../validacao/validacao.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
 import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, } from "../dom/domUtils.js";
 import { tarefas } from "../estado/tarefasState.js";
 import { filtrarTarefas } from "../utils/ordenacao.js";
+import { inicializarUsuario } from "../servicos/perfilService.js";
 
-mostrarEstadoTarefa('Carregando tarefas...')
+iniciar()
 
-try {
-    await tratarEstadoAutenticacao()
-    await carregarTarefas()
-    prepararTarefasParaRenderizar()
-} catch (erro) {
-    const msg = `Não foi possível carregar suas tarefas. ${tratarErro(erro)}`
-    mostrarMensagemErro(domPerfil.mostradorEstadoTarefas, msg)
+async function iniciar() {
+    try {
+        const session = await verificarAcessoPagina()
+
+        if (!session) {
+            return
+        }
+
+        const usuario = await inicializarUsuario(session)
+
+        mostrarPerfil(usuario.nome)
+
+        mostrarEstadoTarefa('Carregando tarefas...')
+
+        await carregarTarefas()
+
+        prepararTarefasParaRenderizar()
+    } catch (erro) {
+        const msg = `Não foi possível carregar suas tarefas. ${tratarErro(erro)}`
+        mostrarMensagemErro(tarefasDom.mostradorEstadoTarefas, msg)
+    }
 }
 
 function prepararTarefasParaRenderizar() {
     if (tarefas.length === 0){
         mostrarEstadoTarefa('Você ainda não possui nenhuma tarefa.')
+        limparLista()
         return
     }
 
@@ -28,95 +45,98 @@ function prepararTarefasParaRenderizar() {
 
     if (tarefasFiltradasEordenadas.length === 0) {
         mostrarEstadoTarefa('Nenhuma tarefa corresponde aos filtros.')
+        limparLista()
         return
     }
 
     renderizarTarefas(tarefasFiltradasEordenadas)
 }
 
-domPerfil.btAdicionar.addEventListener('click', tentarAdicionarTarefa)
+tarefasDom.btAdicionar.addEventListener('click', tentarAdicionarTarefa)
 
-domPerfil.titulo.addEventListener('keydown', (evento) => {
+tarefasDom.titulo.addEventListener('keydown', (evento) => {
     if (evento.key === 'Enter') {
         tentarAdicionarTarefa()
+        return
     }
 
-    apagarMensagemErro(domPerfil.mensagemErroTitulo)
+    apagarMensagemErro(tarefasDom.mensagemErroTitulo)
 })
 
-domPerfil.descricao.addEventListener('keydown', (evento) => {
+tarefasDom.descricao.addEventListener('keydown', (evento) => {
     if (evento.key === 'Enter') {
         tentarAdicionarTarefa()
+        return
     }
 
-    apagarMensagemErro(domPerfil.mensagemErroDescricao)
+    apagarMensagemErro(tarefasDom.mensagemErroDescricao)
 })
 
 async function tentarAdicionarTarefa() {
-    const titulo = domPerfil.titulo.value
-    const descricao = domPerfil.descricao.value
+    const titulo = tarefasDom.titulo.value
+    const descricao = tarefasDom.descricao.value
 
     const erroTitulo = validarTitulo(titulo)
     const erroTexto = validarTexto(descricao)
 
     if (erroTitulo) {
-        mostrarMensagemErro(domPerfil.mensagemErroTitulo, erroTitulo)
+        mostrarMensagemErro(tarefasDom.mensagemErroTitulo, erroTitulo)
         return
     }
 
     if (erroTexto) {
-        mostrarMensagemErro(domPerfil.mensagemErroDescricao, erroTexto)
+        mostrarMensagemErro(tarefasDom.mensagemErroDescricao, erroTexto)
         return
     }
 
-    alterarEstadoBotao(domPerfil.btAdicionar, true, 'Adicionando...')
+    alterarEstadoBotao(tarefasDom.btAdicionar, true, 'Adicionando...')
 
     try {
         await adicionarTarefa(titulo, descricao)
 
         prepararTarefasParaRenderizar()
 
-        limparValueElemento(domPerfil.titulo)
-        limparValueElemento(domPerfil.descricao)
+        limparValueElemento(tarefasDom.titulo)
+        limparValueElemento(tarefasDom.descricao)
     } catch (erro) {
-        mostrarMensagemErro(domPerfil.mensagemErroTitulo, tratarErro(erro))
+        mostrarMensagemErro(tarefasDom.mensagemErroTitulo, tratarErro(erro))
     } finally {
-        alterarEstadoBotao(domPerfil.btAdicionar, false, 'Adicionar')
+        alterarEstadoBotao(tarefasDom.btAdicionar, false, 'Adicionar')
     }
 }
 
-domPerfil.btSair.addEventListener('click', async () => {
-    alterarEstadoBotao(domPerfil.btSair, true, 'Saindo...')
+perfilDom.btSair.addEventListener('click', async () => {
+    alterarEstadoBotao(perfilDom.btSair, true, 'Saindo...')
 
     try {
         await sairUsuarioService()
     } catch (erro) {
-        mostrarMensagemErro(domPerfil.msgLogout, tratarErro(erro))
+        mostrarMensagemErro(perfilDom.msgLogout, tratarErro(erro))
     } finally {
-        alterarEstadoBotao(domPerfil.btSair, false, 'Sair')
+        alterarEstadoBotao(perfilDom.btSair, false, 'Sair')
     }
     
 })
 
-domPerfil.btResetar.addEventListener('click', () => {
+tarefasDom.btResetar.addEventListener('click', () => {
     resetarFiltros()
     prepararTarefasParaRenderizar()
 })
 
-domPerfil.containerDeFiltros.addEventListener('change', (evento) => {
+tarefasDom.containerDeFiltros.addEventListener('change', (evento) => {
     
     if (evento.target.tagName !== 'SELECT') {
         return
     }
 
-    if (evento.target === domPerfil.ordenarPor) {
+    if (evento.target === tarefasDom.ordenarPor) {
         atualizarOpcoesOrdem()
     }
 
     prepararTarefasParaRenderizar()
 }) 
 
-domPerfil.lista.addEventListener('click', async (evento) => {
+tarefasDom.lista.addEventListener('click', async (evento) => {
     const elemento = evento.target
     const li = evento.target.closest('li')
 
@@ -130,7 +150,7 @@ domPerfil.lista.addEventListener('click', async (evento) => {
         const propriedade = elemento.closest('.propriedade')
         const msgErro = propriedade.querySelector('.msgerro')
         
-        const input = editarTarefa(propriedade, elemento, msgErro)
+        const input = editarTarefa(propriedade, elemento)
         
         input.addEventListener('keydown', async (evento) => {
             if (evento.key === 'Enter') {
@@ -159,13 +179,11 @@ domPerfil.lista.addEventListener('click', async (evento) => {
         try {
             await excluirTarefa(id)
 
-            elemento.textContent = 'Excluir'
-            elemento.disabled = false
-
             prepararTarefasParaRenderizar()
         } catch (erro) {
-            alterarEstadoBotao(elemento, false, 'Excluir')
             mostrarMensagemErro(msgErro, tratarErro(erro))
+        } finally {
+            alterarEstadoBotao(elemento, false, 'Excluir')
         }
         
         return
@@ -204,9 +222,9 @@ async function tentarSalvarTarefa(id, elemento) {
     }
 
     try {
-        await salvarTarefa(id, property, tarefa) 
+        const dados = await salvarTarefa(id, property, tarefa) 
         
-        elementoConteudo.textContent = tarefa[property]
+        elementoConteudo.textContent = dados[property]
 
         ocultarElemento(salvar)
         desocultarElemento(btEditar)
@@ -224,7 +242,7 @@ async function tentarSalvarTarefa(id, elemento) {
     return
 }
 
-domPerfil.lista.addEventListener('change', async (evento) => {
+tarefasDom.lista.addEventListener('change', async (evento) => {
     const elemento = evento.target
     const li = evento.target.closest('li')
 
@@ -253,6 +271,10 @@ domPerfil.lista.addEventListener('change', async (evento) => {
 
         try {
             await atualizarPrioridade(id, tarefa)
+
+            prepararTarefasParaRenderizar()
+
+            apagarMensagemErro(msgErro)
         } catch (erro) {
             elemento.value = prioridadeAnterior
             mostrarMensagemErro(msgErro, tratarErro(erro))
@@ -271,8 +293,6 @@ domPerfil.lista.addEventListener('change', async (evento) => {
             await concluirTarefa(id, elemento.checked)
 
             prepararTarefasParaRenderizar()
-
-            apagarMensagemErro(msgErro)
         } catch (erro) {
             elemento.checked = estadoAnterior 
             mostrarMensagemErro(msgErro, tratarErro(erro))

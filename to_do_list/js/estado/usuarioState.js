@@ -1,9 +1,11 @@
-import { obterUsuarioLogadoApi } from "../api/authApi.js" 
-
 let usuarioAtual = null
 
-function definirUsuarioAtual() {
-    usuarioAtual = obterUsuarioLogadoApi()
+function definirUsuarioAtual(usuario) {
+    usuarioAtual = usuario
 }
 
-export {usuarioAtual, definirUsuarioAtual}
+function obterUsuarioAtual() {
+    return usuarioAtual
+}
+
+export {definirUsuarioAtual, obterUsuarioAtual}

@@ -1,11 +1,9 @@
 import { formatarData } from "../utils/data.js"
 
-const domPerfil = {
+const tarefasDom = {
     titulo: document.querySelector('#titulo'),
     descricao: document.querySelector('#descricao'),
     btAdicionar: document.querySelector('#adicionar'),
-    btSair: document.querySelector('#logout'),
-    msgLogout: document.querySelector('#msglogout'),
     lista: document.querySelector('#lista'),
     mensagemErroTitulo: document.querySelector('#errotitulo'),
     mensagemErroDescricao: document.querySelector('#errodescricao'),
@@ -22,32 +20,36 @@ const domPerfil = {
     mostradorEstadoTarefas: document.querySelector('#mostrarestadotarefa')
 }
 
+function limparLista() {
+    tarefasDom.lista.innerHTML = ''
+}
+
 function alterarEstadoBotao(botao, desabilitado, texto) {
     botao.disabled = desabilitado
     botao.textContent = texto
 }
 
 function mostrarEstadoTarefa(mensagem) {
-    domPerfil.mostradorEstadoTarefas.textContent = mensagem
+    tarefasDom.mostradorEstadoTarefas.textContent = mensagem
 }
 
 function limparMostrarEstadoTarefa() {
-    domPerfil.mostradorEstadoTarefas.textContent = ''
+    tarefasDom.mostradorEstadoTarefas.textContent = ''
 }
 
 function adicionarNaLista(tarefa) {
     const li = criarTarefaElemento(tarefa)
-    domPerfil.lista.appendChild(li)
+    tarefasDom.lista.appendChild(li)
 }
 
 function pegarFiltros() {
     return {
-        status: domPerfil.filtroStatus.value,
-        prioridade: domPerfil.filtroPrioridade.value,
-        dtCriacao: domPerfil.filtroDtCriacao.value,
-        dtConclusao: domPerfil.filtroDtConclusao.value,
-        ordenarPor: domPerfil.ordenarPor.value,
-        ordem: domPerfil.ordem.value
+        status: tarefasDom.filtroStatus.value,
+        prioridade: tarefasDom.filtroPrioridade.value,
+        dtCriacao: tarefasDom.filtroDtCriacao.value,
+        dtConclusao: tarefasDom.filtroDtConclusao.value,
+        ordenarPor: tarefasDom.ordenarPor.value,
+        ordem: tarefasDom.ordem.value
     }
 }
 
@@ -83,9 +85,9 @@ function atualizarOpcoesOrdem() {
         }
     }
 
-    const ordenarPor = domPerfil.ordenarPor.value
-    const opcUm = domPerfil.ordemOpcUm
-    const opcDois = domPerfil.ordemOpcDois
+    const ordenarPor = tarefasDom.ordenarPor.value
+    const opcUm = tarefasDom.ordemOpcUm
+    const opcDois = tarefasDom.ordemOpcDois
 
     if (ordenarPor === 'nenhum') {
         opcUm.value = 'nenhum'
@@ -104,20 +106,19 @@ function atualizarOpcoesOrdem() {
 }
 
 function resetarFiltros() {
-    domPerfil.filtroStatus.value = 'todas'
-    domPerfil.filtroPrioridade.value = 'todas'
-    domPerfil.filtroDtCriacao.value = 'todas'
-    domPerfil.filtroDtConclusao.value = 'todas'
-    domPerfil.ordenarPor.value = 'status'
-    domPerfil.ordem.value = 'pendentes'
+    tarefasDom.filtroStatus.value = 'todas'
+    tarefasDom.filtroPrioridade.value = 'todas'
+    tarefasDom.filtroDtCriacao.value = 'todas'
+    tarefasDom.filtroDtConclusao.value = 'todas'
+    tarefasDom.ordenarPor.value = 'status'
 
     atualizarOpcoesOrdem()
 
-    domPerfil.ordem.value = 'pendentes'
+    tarefasDom.ordem.value = 'pendentes'
 }
 
 function renderizarTarefas(tarefas) {
-    domPerfil.lista.innerHTML = ''
+    tarefasDom.lista.innerHTML = ''
 
     limparMostrarEstadoTarefa()
 
@@ -300,13 +301,13 @@ function editarTarefa(div, elemento) {
 
     btSalvar.classList.remove('oculto')
 
-    const input = document.createElement('input')
+    const descricao = document.createElement('textarea')
 
-    input.classList.add('input-propriedade')
+    descricao.classList.add('input-propriedade')
 
-    input.value = conteudo.textContent
+    descricao.value = conteudo.textContent
     
-    return input
+    return descricao
 }
 
-export {domPerfil, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa}
+export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa, limparLista}

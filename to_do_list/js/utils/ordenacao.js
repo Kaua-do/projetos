@@ -51,13 +51,10 @@ function filtrarTarefas(tarefas, filtros) {
 }
 
 function ordenarTarefas(tarefas, ordenarPor, ordem) {
-    let tarefasOrdenadas = []
-    
     switch (ordenarPor) {
 
         case 'nenhum':
-            tarefasOrdenadas = tarefas
-            return tarefasOrdenadas
+            return tarefas
         
         case 'status':
             

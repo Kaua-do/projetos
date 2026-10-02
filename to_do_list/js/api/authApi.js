@@ -1,12 +1,17 @@
 import { traduzirErro } from "../erros/tratamentoErro.js" 
 import { supabaseClient } from "../config/supabase.js"
 
-async function cadastrarUsuarioApi(email, senha) {
+async function cadastrarUsuarioApi(email, senha, nome) {
     const {data, error} = await supabaseClient
     .auth
     .signUp({
         email,
-        password: senha
+        password: senha,
+        options: {
+            data: {
+                nome
+            }
+        }
     })
     
     if (error) {

@@ -8,7 +8,7 @@ function traduzirErro(erro, tipo) {
     const erroDeRede = identificarErroDeRede(erro)
 
     if (erroDeRede) {
-        return criarModeloErro('Erro de conexão', 'rede', 'erro_conexao')
+        return criarModeloErro('Erro de conexão', 'rede', 'falha_conexao')
     }
 
     switch (tipo) {

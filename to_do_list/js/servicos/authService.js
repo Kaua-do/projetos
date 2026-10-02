@@ -1,8 +1,8 @@
 import { cadastrarUsuarioApi, entrarUsuarioApi, sairUsuarioApi, verificarSessionApi } from "../api/authApi.js"
 import { definirUsuarioAtual } from "../estado/usuarioState.js"
 
-async function cadastrarUsuarioService(email, senha) {
-    await cadastrarUsuarioApi(email, senha)
+async function cadastrarUsuarioService(email, senha, nome) {
+    await cadastrarUsuarioApi(email, senha, nome)
 }
 
 async function entrarUsuarioService(email, senha) {
@@ -11,32 +11,21 @@ async function entrarUsuarioService(email, senha) {
 
 async function sairUsuarioService() {
     await sairUsuarioApi()
-
-    await tratarEstadoAutenticacao()
+    definirUsuarioAtual(null)
 }
 
-async function tratarEstadoAutenticacao() {
+async function verificarAcessoPagina() {
     const session = await verificarSessionApi()
+    
+    if (!session) { 
+        window.location.href = './login.html'
 
-    const paginaAtual = window.location.pathname
-
-    if (session) {
-        if (!paginaAtual.includes('perfil.html')) {
-            window.location.href = './perfil.html'
-        }
-       
-        definirUsuarioAtual()
-
-        return
+        return null
     }
 
-    if (!paginaAtual.includes('login.html')) {
-        window.location.href = 'login.html'
-
-        return
-    }
+    return session
 }
 
 export {
-    cadastrarUsuarioService, entrarUsuarioService, tratarEstadoAutenticacao, sairUsuarioService
+    cadastrarUsuarioService, entrarUsuarioService, verificarAcessoPagina, sairUsuarioService
 }
