@@ -106,14 +106,14 @@ async function tentarAdicionarTarefa() {
 }
 
 perfilDom.btSair.addEventListener('click', async () => {
-    alterarEstadoBotao(perfilDom.btSair, true, 'Saindo...')
+    perfilDom.btSair.disabled = true
 
     try {
         await sairUsuarioService()
     } catch (erro) {
         mostrarMensagemErro(perfilDom.msgLogout, tratarErro(erro))
     } finally {
-        alterarEstadoBotao(perfilDom.btSair, false, 'Sair')
+        perfilDom.btSair.disabled = false
     }
     
 })

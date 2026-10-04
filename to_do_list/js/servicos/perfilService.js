@@ -2,7 +2,7 @@ import { obterPerfilApi, criarPerfilApi } from "../api/perfilApi.js"
 import { definirUsuarioAtual } from "../estado/usuarioState.js"
 
 async function garantirPerfil(usuario) {
-    let perfil = await obterPerfilApi()
+    let perfil = await obterPerfilApi(usuario.id)
 
     if (!perfil) {
         perfil = await criarPerfilApi(

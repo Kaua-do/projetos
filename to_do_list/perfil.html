@@ -15,78 +15,336 @@
             background-color: #f2f2f2;
         }
 
+        main {
+            padding: 10px;
+        }
+
+        .oculto {
+            display: none;
+        }
+
+        #perfil {
+            border: 1px solid black;
+            margin-bottom: 10px;
+        }
+
+        #perfil .conteudo {
+            display: flex;
+            align-items: center;
+            border-radius: 6px;
+            padding: 8px 10px;
+        }
+
+        #msglogout {
+            font-size: 0.8em;
+            text-align: center;
+            margin: 0px;
+        }
+
+        #perfil i {
+            margin-right: 8px;
+            font-size: 2.5em;
+        }
+
+        #elementos {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        #elementosperfil {
+            display: flex;
+            flex-direction: column;
+            width: 90%;
+        }
+
+        #elementosperfil .msg {
+            font-size: 0.8em;
+        }
+
+        #logout {
+            border: 0px;
+        }
+
+        #logout i {
+            margin: 0px;
+            font-size: 1.5em;
+        }
+
+        #areacriacao {
+            text-align: start;
+            border: 1px solid black;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        #areacriacao i, #containerfiltros i {
+            margin-left: 2px;
+        }
+
+        .campo{
+            padding: 2px;
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        #titulo {
+            padding: 0px;
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        #descricao {
+            width: 100%;
+            height: 80px;
+            border-radius: 5px;
+        }
+
+        #errotitulo, #errodescricao {
+            text-align: start;
+            font-size: 0.8em;
+            margin: 0px 0px 0px 3px;
+            height: 20%;
+        }
+
+        #adicionar {
+            margin-left: 2px;
+            width: 100px;
+            border-radius: 5px;
+        }
+
+        #filtros {
+            border: 1px solid black;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        #containerfiltros div {
+            display: flex;
+            margin: 0px;
+        }
+
+        #containerfiltros {
+            display: flex;
+            margin-bottom: 8px;
+            border: 1px solid black;
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        #containerfiltros div * {
+            margin: 0px;
+        }
+
+        .colunaum, .colunadois {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+            
+        }
+
+        .colunaum p, .colunadois p {
+            font-size: 0.9em;
+        }
+
+        #containerfiltros select {
+            font-size: 0.8em;
+        }
+
+        #divreset {
+            display: flex;
+            justify-content: end;
+        }
+
+        #resetarfiltros {
+            border-radius: 4px;
+        }
+
+        #divlista {
+            border: 1px solid black;
+            border-radius: 6px;
+            padding: 10px;
+        }
+
+        #lista {
+            list-style: none;
+            padding: 0px;
+            margin-top: 5px;
+        }
+
+        #lista li {
+            display: flex;
+            margin-bottom: 6px;
+            border: 1px solid black;
+            border-radius: 6px;
+        }
+
+        #lista li .container {
+            padding: 8px;
+        }
+
+        #lista li .container .propriedade {
+            margin-bottom: 5px;
+        }
+
+        #lista li .container .editar-propriedade {
+            font-size: 0.7em;
+        }
+
+        #lista li .container .propriedade {
+            display: flex;
+            gap: 20px;
+        }
+
+        .div-checkbox {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 8%;
+            border-right: 1px solid black;
+            padding: 8px;
+        }
+
+        .checkbox {
+            transform: scale(1.5);
+        }
+
+        .div-parteum, .div-partedois, .div-partetres {
+            margin-bottom: 8px;
+        }
+
+        .div-partedois {
+            display: flex;
+            gap: 10px;
+        }
+
+        .div-partedois .conteudoprioridade{
+            font-size: 0.7em;
+            padding: 5px;
+            border-radius: 12px;
+        }
+
+        .div-partedois .conteudoprioridade option {
+            border-radius: 12px;
+        }
+
+        .div-partedois .div-status {
+            font-size: 0.7em;
+            border: 1px solid black;
+            background-color: white;
+            padding: 5px;
+            border-radius: 12px;
+        }
+
+        .div-partetres {
+            font-size: 0.75em;
+        }
 
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 </head>
 <body>
     <main>
         <div id="perfil">
-            <span class="perfiltexto"></span>
-            <button id="logout">Sair</button>
+            <div class="conteudo">
+                <span><i class="fa-solid fa-circle-user"></i></span>
+                <div id="elementos">
+                    <div id="elementosperfil">
+                        <span class="perfiltexto"></span>
+                        <span class="msg">Seja bem vindo!</span>
+                    </div>
+                    <button id="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></button>
+                </div>
+            </div>
+            <div class="div-mensagem-erro">
+                <p id="msglogout" class="oculto"></p>
+            </div>
         </div>
         <div id="areacriacao">
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>Nova tarefa</span>
             <div class="campo">
                 <input type="text" id="titulo" placeholder="Título">
                 <p id="errotitulo" class="oculto"></p>
             </div>
             <div class="campo">
-                <input type="textarea" id="descricao" placeholder="Descrição">
+                <textarea id="descricao" placeholder="Descrição"></textarea>
                 <p id="errodescricao" class="oculto"></p>
             </div>
             <button id="adicionar">Adicionar</button>
-            <p id="msglogout"></p>
         </div>
-            <p>Filtros</p>
-            <div id="containerfiltros">
-                <p>Status:</p>
-                <select id="selectstatusfiltros">
-                    <option value="todas">Todas</option>
-                    <option value="concluidas">Concluídas</option>
-                    <option value="pendentes">Pendentes</option>
-                </select>
-
-                <p>Prioridade:</p>
-                <select id="selectprioridadefiltros">
-                    <option value="todas">Todas</option>
-                    <option value="alta">Alta</option>
-                    <option value="media">Média</option>
-                    <option value="baixa">Baixa</option>
-                </select>
-
-                <p>Data de criação:</p>
-                <select id="selectcriacaofiltros">
-                    <option value="todas">Todas</option>
-                    <option value="setedias">Últimos 7 dias</option>
-                    <option value="trintadias">Últimos 30 dias</option>
-                    <option value="noventadias">Últimos 90 dias</option>
-                </select>
-
-                <p>Data de conclusão:</p>
-                <select id="selectconclusaofiltros">
-                    <option value="todas">Todas</option>
-                    <option value="setedias">Últimos 7 dias</option>
-                    <option value="trintadias">Últimos 30 dias</option>
-                    <option value="noventadias">Últimos 90 dias</option>
-                </select>
-
-                <p>Ordenar por:</p>
-                <select id="selectordenarporfiltros">
-                    <option value="nenhum">Nenhum</option>
-                    <option value="status" selected>Status</option>
-                    <option value="prioridade">Prioridade</option>
-                    <option value="criacao">Data de criação</option>
-                    <option value="conclusao">Data de conclusão</option>
-                </select>
-
-                <p>Ordem:</p>
-                <select id="selectordemfiltros">
-                    <option class="opcum" value="pendentes">Pendentes</option>
-                    <option class="opcdois" value="concluidas">Concluídas</option>
-                </select>
-                <button id="resetarfiltros">Resetar</button>
+            <div id="filtros">
+                <span><i class="fa-solid fa-filter"></i></span>
+                <span>Filtros</span>
+                <div id="containerfiltros">
+                    <div class="colunaum">
+                        <div id="status">
+                            <p>Status:</p>
+                            <select id="selectstatusfiltros">
+                                <option value="todas">Todas</option>
+                                <option value="concluidas">Concluídas</option>
+                                <option value="pendentes">Pendentes</option>
+                            </select>
+                        </div>
+                        <div id="prioridade">
+                            <p>Prioridade:</p>
+                            <select id="selectprioridadefiltros">
+                                <option value="todas">Todas</option>
+                                <option value="alta">Alta</option>
+                                <option value="media">Média</option>
+                                <option value="baixa">Baixa</option>
+                            </select>
+                        </div>
+                        <div id="datacriacao">
+                            <p>Data de Criação:</p>
+                            <select id="selectcriacaofiltros">
+                                <option value="todas">Todas</option>
+                                <option value="setedias">Últimos 7 dias</option>
+                                <option value="trintadias">Últimos 30 dias</option>
+                                <option value="noventadias">Últimos 90 dias</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="colunadois">
+                        <div id="dataconclusao">
+                            <p>Data de Conclusão:</p>
+                            <select id="selectconclusaofiltros">
+                                <option value="todas">Todas</option>
+                                <option value="setedias">Últimos 7 dias</option>
+                                <option value="trintadias">Últimos 30 dias</option>
+                                <option value="noventadias">Últimos 90 dias</option>
+                            </select>
+                        </div>
+                        <div id="ordenarpor">
+                            <p>Ordenar por:</p>
+                            <select id="selectordenarporfiltros">
+                                <option value="nenhum">Nenhum</option>
+                                <option value="status" selected>Status</option>
+                                <option value="prioridade">Prioridade</option>
+                                <option value="criacao">Data de criação</option>
+                                <option value="conclusao">Data de conclusão</option>
+                            </select>
+                        </div>
+                        <div id="ordem">
+                            <p>Ordem:</p>
+                            <select id="selectordemfiltros">
+                                <option class="opcum" value="pendentes">Pendentes</option>
+                                <option class="opcdois" value="concluidas">Concluídas</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div id="divreset"><button id="resetarfiltros">Resetar</button></div>
             </div>
         <div id="mostrarestadotarefa"></div>
-        <ul id="lista"></ul>
+        <div id="divlista">
+            <i class="fa-solid fa-circle-plus"></i>
+            <span>Lista de tarefas</span>
+            <ul id="lista"></ul>
+        </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script type="module" src="js/eventos/tarefasEventos.js"></script>

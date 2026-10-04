@@ -1,10 +1,11 @@
 import { supabaseClient } from "../config/supabase.js";
 import { traduzirErro } from "../erros/tratamentoErro.js";
 
-async function obterPerfilApi() {
+async function obterPerfilApi(usuarioId) {
     const {data, error} = await supabaseClient
     .from('perfis')
     .select('*')
+    .eq('id', usuarioId)
     .maybeSingle()
 
     if (error) {

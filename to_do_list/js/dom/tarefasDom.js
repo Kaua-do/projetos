@@ -140,18 +140,12 @@ function criarTarefaElemento(tarefa) {
     const divStatus = document.createElement('div')
     const divDtCriacao = document.createElement('div')
     const divDtConclusao = document.createElement('div')
-
-    const spanPropriedadeTitulo = document.createElement('span')
-    const spanPropriedadeDescricao = document.createElement('span')
-    const spanPropriedadePrioridade = document.createElement('span')
-    const spanPropriedadeStatus = document.createElement('span')
     const spanPropriedadeDtCriacao = document.createElement('span')
     const spanPropriedadeDtConclusao = document.createElement('span')
 
-    spanPropriedadeTitulo.textContent = 'Título: '
-    spanPropriedadeDescricao.textContent = 'Descrição: '
-    spanPropriedadePrioridade.textContent = 'Prioridade: '
-    spanPropriedadeStatus.textContent = 'Status: '
+    divPrioridade.classList.add('div-prioridade')
+    divStatus.classList.add('div-status')
+
     spanPropriedadeDtCriacao.textContent = 'Criada em: '
     spanPropriedadeDtConclusao.textContent = 'Concluída em: '
 
@@ -230,13 +224,11 @@ function criarTarefaElemento(tarefa) {
 
     div.classList.add('container')
 
-    divTitulo.appendChild(spanPropriedadeTitulo)
     divTitulo.appendChild(spanTitulo)
     divTitulo.appendChild(btEditarTitulo)
     divTitulo.appendChild(btSalvarTitulo)
     divTitulo.appendChild(mensagemErroTitulo)
 
-    divDescricao.appendChild(spanPropriedadeDescricao)
     divDescricao.appendChild(spanDescricao)
     divDescricao.appendChild(btEditarDescricao)
     divDescricao.appendChild(btSalvarDescricao)
@@ -250,10 +242,8 @@ function criarTarefaElemento(tarefa) {
 
     div.appendChild(divTitulo)
     div.appendChild(divDescricao)
-    divPrioridade.appendChild(spanPropriedadePrioridade)
     divPrioridade.appendChild(selectPrioridade)
 
-    divStatus.appendChild(spanPropriedadeStatus)
     divStatus.appendChild(spanStatus)
 
     divDtCriacao.appendChild(spanPropriedadeDtCriacao)
@@ -262,13 +252,27 @@ function criarTarefaElemento(tarefa) {
     divDtConclusao.appendChild(spanPropriedadeDtConclusao)
     divDtConclusao.appendChild(spanDtConclusao)
 
-    div.appendChild(divPrioridade)
-    div.appendChild(divStatus)
-    div.appendChild(divDtCriacao)
+    const divParteUm = document.createElement('div')
+    divParteUm.classList.add('div-parteum')
+    divParteUm.appendChild(divTitulo)
+    divParteUm.appendChild(divDescricao)
+
+    const divParteDois = document.createElement('div')
+    divParteDois.classList.add('div-partedois')
+    divParteDois.appendChild(divPrioridade)
+    divParteDois.appendChild(divStatus)
+
+    const divParteTres = document.createElement('div')
+    divParteTres.classList.add('div-partetres')
+    divParteTres.appendChild(divDtCriacao)
+
+    div.appendChild(divParteUm)
+    div.appendChild(divParteDois)
+    div.appendChild(divParteTres)
 
     if (tarefa.dtConclusao) {
         spanDtConclusao.textContent = formatarData(tarefa.dtConclusao).replace(',', ' às ')
-        div.appendChild(divDtConclusao)
+        divParteTres.appendChild(divDtConclusao)
     }
     
     div.appendChild(btExcluir)
