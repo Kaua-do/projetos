@@ -7,7 +7,10 @@ const tarefasDom = {
     lista: document.querySelector('#lista'),
     mensagemErroTitulo: document.querySelector('#errotitulo'),
     mensagemErroDescricao: document.querySelector('#errodescricao'),
+    contadorTitulo: document.querySelector('#contadortitulo'),
+    contadorDescricao: document.querySelector('#contadordescricao'),
     containerDeFiltros: document.querySelector('#containerfiltros'),
+    btMostrarFiltros: document.querySelector('#mostrarfiltros'),
     btResetar: document.querySelector('#resetarfiltros'),
     filtroStatus: document.querySelector('#selectstatusfiltros'),
     filtroPrioridade: document.querySelector('#selectprioridadefiltros'),
@@ -18,6 +21,21 @@ const tarefasDom = {
     ordemOpcUm:document.querySelector('.opcum'),
     ordemOpcDois: document.querySelector('.opcdois'),
     mostradorEstadoTarefas: document.querySelector('#mostrarestadotarefa')
+}
+
+function atualizarContador(tipo) {
+    if (tipo === 'titulo') {
+        tarefasDom.contadorTitulo.textContent = `${tarefasDom.titulo.value.length}/20`
+    }
+
+    if (tipo === 'descricao') {
+        tarefasDom.contadorDescricao.textContent = `${tarefasDom.descricao.value.length}/200`
+    }
+}
+
+function zerarContadores() {
+    tarefasDom.contadorTitulo.textContent = `0/20`
+    tarefasDom.contadorDescricao.textContent = `0/200`
 }
 
 function limparLista() {
@@ -146,8 +164,14 @@ function criarTarefaElemento(tarefa) {
     divPrioridade.classList.add('div-prioridade')
     divStatus.classList.add('div-status')
 
-    spanPropriedadeDtCriacao.textContent = 'Criada em: '
-    spanPropriedadeDtConclusao.textContent = 'Concluída em: '
+    const iconCalendarioUm = document.createElement('i')
+    iconCalendarioUm.classList.add('fa-regular', 'fa-calendar-days')
+
+    const iconCalendarioDois = document.createElement('i')
+    iconCalendarioDois.classList.add('fa-regular', 'fa-calendar-check')
+
+    spanPropriedadeDtCriacao.textContent = ` Criada em: `
+    spanPropriedadeDtConclusao.textContent = ` Concluída em: `
 
     const spanTitulo = document.createElement('span')
     const spanDescricao = document.createElement('span')
@@ -246,9 +270,11 @@ function criarTarefaElemento(tarefa) {
 
     divStatus.appendChild(spanStatus)
 
+    divDtCriacao.appendChild(iconCalendarioUm)
     divDtCriacao.appendChild(spanPropriedadeDtCriacao)
     divDtCriacao.appendChild(spanDtCriacao)
 
+    divDtConclusao.appendChild(iconCalendarioDois)
     divDtConclusao.appendChild(spanPropriedadeDtConclusao)
     divDtConclusao.appendChild(spanDtConclusao)
 
@@ -314,4 +340,4 @@ function editarTarefa(div, elemento) {
     return descricao
 }
 
-export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa, limparLista}
+export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa, limparLista, atualizarContador, zerarContadores}

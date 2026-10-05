@@ -25,6 +25,7 @@
 
         #perfil {
             border: 1px solid black;
+            border-radius: 6px;
             margin-bottom: 10px;
         }
 
@@ -84,11 +85,23 @@
         }
 
         .campo{
+            display: flex;
+            flex-direction: column;
             padding: 2px;
             width: 100%;
-            border-radius: 5px;
+            height: 20%;
         }
 
+        #mensagenstitulo, #mensagensdescricao {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #mensagenstitulo p, #mensagensdescricao p{
+            font-size: 0.8em;
+            margin: 0px;
+        }
+        
         #titulo {
             padding: 0px;
             width: 100%;
@@ -99,6 +112,11 @@
             width: 100%;
             height: 80px;
             border-radius: 5px;
+        }
+
+        #mensagenstitulo .div-contador, #mensagensdescricao .div-contador {
+            display: flex;
+            justify-content: end;
         }
 
         #errotitulo, #errodescricao {
@@ -127,7 +145,6 @@
         }
 
         #containerfiltros {
-            display: flex;
             margin-bottom: 8px;
             border: 1px solid black;
             border-radius: 6px;
@@ -138,20 +155,26 @@
             margin: 0px;
         }
 
-        .colunaum, .colunadois {
+        #colunaum, #colunadois {
             display: flex;
             flex-direction: column;
             gap: 5px;
-            padding: 5px;
-            
+            width: 50%;
+            padding: 5px; 
         }
 
-        .colunaum p, .colunadois p {
+        #colunaum p, #colunadois p {
             font-size: 0.9em;
         }
 
         #containerfiltros select {
-            font-size: 0.8em;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        #containerfiltros #status, #prioridade, #datacriacao, #dataconclusao, #ordenarpor, #ordem {
+            display: flex;
+            flex-direction: column;
         }
 
         #divreset {
@@ -161,6 +184,40 @@
 
         #resetarfiltros {
             border-radius: 4px;
+        }
+
+        #filtros .elementosiniciais {
+            display: flex;
+        }
+
+        #filtros .elementosiniciais .elementovisualfunil {
+            display: flex;
+            align-items: center;
+            margin-left: 3px;
+            margin-right: 4px;
+        }
+
+        #filtros .elementosiniciais .elementos {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 5px 0px 5px 5px;
+        }
+
+        #filtros div {
+            display: flex;
+        }
+
+        #filtros .botaofiltro {
+            font-size: 0.75em;
+            padding: 4px;
+            border-radius: 8px;
+            width: 80px;
+        }
+
+        #containerfiltros.oculto, #divreset.oculto {
+            display: none;
         }
 
         #divlista {
@@ -266,21 +323,40 @@
         <div id="areacriacao">
             <i class="fa-solid fa-circle-plus"></i>
             <span>Nova tarefa</span>
-            <div class="campo">
-                <input type="text" id="titulo" placeholder="Título">
-                <p id="errotitulo" class="oculto"></p>
+            <div class="campo titulo">
+                <input type="text" id="titulo" maxlength="20" placeholder="Título da tarefa">
+                <div id="mensagenstitulo">
+                    <div class="div-erro">
+                        <p id="errotitulo" class="oculto"></p>
+                    </div>
+                    <div class="div-contador">
+                        <p id="contadortitulo">0/20</p>
+                    </div>
+                </div>
             </div>
-            <div class="campo">
-                <textarea id="descricao" placeholder="Descrição"></textarea>
-                <p id="errodescricao" class="oculto"></p>
+            <div class="campo descricao">
+                <textarea id="descricao" maxlength="200" placeholder="Descrição (Opicional)"></textarea>
+                <div id="mensagensdescricao">
+                    <div class="div-erro">
+                        <p id="errodescricao" class="oculto"></p>
+                    </div>
+                    <div class="div-contador">
+                        <p id="contadordescricao">0/200</p>
+                    </div>
+                </div>
             </div>
             <button id="adicionar">Adicionar</button>
         </div>
             <div id="filtros">
-                <span><i class="fa-solid fa-filter"></i></span>
-                <span>Filtros</span>
-                <div id="containerfiltros">
-                    <div class="colunaum">
+                <div class="elementosiniciais">
+                    <span class="elementovisualfunil"><i class="fa-solid fa-filter"></i></span>
+                    <div class="elementos">
+                        <span>Filtros</span>
+                        <div><button id="mostrarfiltros" class="botaofiltro"><i class="fa-solid fa-arrow-down-wide-short"></i> Filtros</button></div>
+                    </div>
+                </div>
+                <div id="containerfiltros" class="oculto">
+                    <div id="colunaum">
                         <div id="status">
                             <p>Status:</p>
                             <select id="selectstatusfiltros">
@@ -308,7 +384,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="colunadois">
+                    <div id="colunadois">
                         <div id="dataconclusao">
                             <p>Data de Conclusão:</p>
                             <select id="selectconclusaofiltros">
@@ -337,7 +413,7 @@
                         </div>
                     </div>
                 </div>
-                <div id="divreset"><button id="resetarfiltros">Resetar</button></div>
+                <div id="divreset" class="oculto"><button id="resetarfiltros"><i class="fa-solid fa-arrows-rotate"></i> Resetar</button></div>
             </div>
         <div id="mostrarestadotarefa"></div>
         <div id="divlista">

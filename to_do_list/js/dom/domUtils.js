@@ -24,4 +24,10 @@ function apagarElemento(elemento) {
     elemento.remove()
 }
 
-export {mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento}
+function criarIcon(classe) {
+    const icon = document.createElement('i')
+    icon.classList.add('fa-solid', classe)
+    return icon
+}
+
+export {mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon}

@@ -1,10 +1,10 @@
-import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista} from "../dom/tarefasDom.js";
+import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContador, zerarContadores} from "../dom/tarefasDom.js";
 import { perfilDom, mostrarPerfil } from "../dom/perfilDom.js";
 import { carregarTarefas, adicionarTarefa, salvarTarefa, excluirTarefa, atualizarPrioridade, concluirTarefa } from "../servicos/tarefasService.js";
 import { sairUsuarioService, verificarAcessoPagina } from "../servicos/authService.js";
 import { validarTexto, validarTitulo } from "../validacao/validacao.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
-import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, } from "../dom/domUtils.js";
+import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon} from "../dom/domUtils.js";
 import { tarefas } from "../estado/tarefasState.js";
 import { filtrarTarefas } from "../utils/ordenacao.js";
 import { inicializarUsuario } from "../servicos/perfilService.js";
@@ -59,8 +59,6 @@ tarefasDom.titulo.addEventListener('keydown', (evento) => {
         tentarAdicionarTarefa()
         return
     }
-
-    apagarMensagemErro(tarefasDom.mensagemErroTitulo)
 })
 
 tarefasDom.descricao.addEventListener('keydown', (evento) => {
@@ -68,7 +66,15 @@ tarefasDom.descricao.addEventListener('keydown', (evento) => {
         tentarAdicionarTarefa()
         return
     }
+})
 
+tarefasDom.titulo.addEventListener('input', () => {
+    atualizarContador('titulo')
+    apagarMensagemErro(tarefasDom.mensagemErroTitulo)
+})
+
+tarefasDom.descricao.addEventListener('input', () => {
+    atualizarContador('descricao')
     apagarMensagemErro(tarefasDom.mensagemErroDescricao)
 })
 
@@ -98,6 +104,7 @@ async function tentarAdicionarTarefa() {
 
         limparValueElemento(tarefasDom.titulo)
         limparValueElemento(tarefasDom.descricao)
+        zerarContadores()
     } catch (erro) {
         mostrarMensagemErro(tarefasDom.mensagemErroTitulo, tratarErro(erro))
     } finally {
@@ -135,6 +142,32 @@ tarefasDom.containerDeFiltros.addEventListener('change', (evento) => {
 
     prepararTarefasParaRenderizar()
 }) 
+
+tarefasDom.btMostrarFiltros.addEventListener('click', (evento) => {
+    const botao = evento.target
+    const divFiltros = botao.closest('#filtros')
+    const divReset = divFiltros.querySelector('#divreset')
+    const i = botao.querySelector('i')
+
+    if (!i) {
+        return
+    }
+
+    if (i.className === "fa-solid fa-arrow-down-wide-short") {
+        i.remove()
+        const icon = criarIcon('fa-arrow-up-wide-short')
+        botao.prepend(icon)
+    }
+
+    if (i.className === "fa-solid fa-arrow-up-wide-short") {
+        i.remove()
+        const icon = criarIcon('fa-arrow-down-wide-short')
+        botao.prepend(icon)
+    }
+
+    divReset.classList.toggle('oculto')
+    tarefasDom.containerDeFiltros.classList.toggle('oculto')
+})
 
 tarefasDom.lista.addEventListener('click', async (evento) => {
     const elemento = evento.target
