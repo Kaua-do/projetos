@@ -1,6 +1,7 @@
 import { formatarData } from "../utils/data.js"
 
 const tarefasDom = {
+    main: document.querySelector('main'),
     titulo: document.querySelector('#titulo'),
     descricao: document.querySelector('#descricao'),
     btAdicionar: document.querySelector('#adicionar'),
@@ -20,7 +21,8 @@ const tarefasDom = {
     ordem: document.querySelector('#selectordemfiltros'),
     ordemOpcUm:document.querySelector('.opcum'),
     ordemOpcDois: document.querySelector('.opcdois'),
-    mostradorEstadoTarefas: document.querySelector('#mostrarestadotarefa')
+    mostradorEstadoTarefas: document.querySelector('#mostrarestadotarefa'),
+    modalConfirmacao: document.querySelector('#modalconfirmacao')
 }
 
 function atualizarContador(tipo) {
@@ -173,8 +175,8 @@ function criarTarefaElemento(tarefa) {
     spanPropriedadeDtCriacao.textContent = ` Criada em: `
     spanPropriedadeDtConclusao.textContent = ` Concluída em: `
 
-    const spanTitulo = document.createElement('span')
-    const spanDescricao = document.createElement('span')
+    const h3Titulo = document.createElement('h3')
+    const pDescricao = document.createElement('p')
 
     const selectPrioridade = document.createElement('select')
     const prioridadeBaixa = document.createElement('option')
@@ -193,8 +195,8 @@ function criarTarefaElemento(tarefa) {
     const spanDtCriacao = document.createElement('span')
     const spanDtConclusao = document.createElement('span')
 
-    spanTitulo.classList.add('conteudo')
-    spanDescricao.classList.add('conteudo')
+    h3Titulo.classList.add('conteudo')
+    pDescricao.classList.add('conteudo')
     selectPrioridade.classList.add('conteudoprioridade')
     spanStatus.classList.add('conteudostatus')
     spanDtCriacao.classList.add('conteudodtcriacao')
@@ -204,8 +206,8 @@ function criarTarefaElemento(tarefa) {
     selectPrioridade.appendChild(prioridadeMedia)
     selectPrioridade.appendChild(prioridadeAlta)
 
-    spanTitulo.textContent = tarefa.titulo
-    spanDescricao.textContent = tarefa.descricao
+    h3Titulo.textContent = tarefa.titulo
+    pDescricao.textContent = tarefa.descricao
     selectPrioridade.value = tarefa.prioridade
 
     if (tarefa.status) {
@@ -215,14 +217,13 @@ function criarTarefaElemento(tarefa) {
     }
     
     spanDtCriacao.textContent = formatarData(tarefa.dtCriacao).replace(',', ' às ')
+
+    const iconEditTitulo = document.createElement('i')
+    iconEditTitulo.classList.add('fa-regular', 'fa-pen-to-square')
     
     const btEditarTitulo = document.createElement('button')
-    btEditarTitulo.textContent = 'Editar'
+    btEditarTitulo.textContent = 'Título'
     btEditarTitulo.classList.add('editar-propriedade')
-
-    const btEditarDescricao = document.createElement('button')
-    btEditarDescricao.textContent = 'Editar'
-    btEditarDescricao.classList.add('editar-propriedade')
 
     const btSalvarTitulo = document.createElement('button')
     btSalvarTitulo.textContent = 'Salvar'
@@ -234,10 +235,6 @@ function criarTarefaElemento(tarefa) {
     btSalvarDescricao.classList.add('salvar')
     btSalvarDescricao.classList.add('oculto')
 
-    const btExcluir = document.createElement('button')
-    btExcluir.classList.add('excluir')
-    btExcluir.textContent = 'Excluir'
-
     const mensagemErroTitulo = document.createElement('p')
     const mensagemErroDescricao = document.createElement('p')
 
@@ -248,20 +245,32 @@ function criarTarefaElemento(tarefa) {
 
     div.classList.add('container')
 
-    divTitulo.appendChild(spanTitulo)
+    divTitulo.appendChild(h3Titulo)
     divTitulo.appendChild(btEditarTitulo)
     divTitulo.appendChild(btSalvarTitulo)
     divTitulo.appendChild(mensagemErroTitulo)
 
-    divDescricao.appendChild(spanDescricao)
+    const iconEditDescricao = document.createElement('i')
+    iconEditDescricao.classList.add('fa-regular', 'fa-pen-to-square')
+
+    const btEditarDescricao = document.createElement('button')
+    
+    btEditarDescricao.textContent = 'Descrição' 
+
+    if (tarefa.descricao === '') {
+        pDescricao.classList.add('oculto')
+    }
+    
+    divDescricao.appendChild(pDescricao)
     divDescricao.appendChild(btEditarDescricao)
     divDescricao.appendChild(btSalvarDescricao)
     divDescricao.appendChild(mensagemErroDescricao)
 
-    divTitulo.classList.add('propriedade')
+    btEditarDescricao.classList.add('editar-propriedade')
+    divTitulo.classList.add('divtitulo', 'propriedade')
     divTitulo.dataset.propriedade = 'titulo'
 
-    divDescricao.classList.add('propriedade')
+    divDescricao.classList.add('divdescricao', 'propriedade')
     divDescricao.dataset.propriedade = 'descricao'
 
     div.appendChild(divTitulo)
@@ -300,8 +309,6 @@ function criarTarefaElemento(tarefa) {
         spanDtConclusao.textContent = formatarData(tarefa.dtConclusao).replace(',', ' às ')
         divParteTres.appendChild(divDtConclusao)
     }
-    
-    div.appendChild(btExcluir)
 
     const divCheckbox = document.createElement('div')
     divCheckbox.classList.add('div-checkbox')
@@ -311,13 +318,64 @@ function criarTarefaElemento(tarefa) {
     checkbox.checked = tarefa.status
     const msgErroApi = document.createElement('p')
     msgErroApi.classList.add('msgerro-api')
-    msgErroApi.classList.add('oculto')
+    msgErroApi.classList.add('ocult')
+    msgErroApi.textContent = 'Ocoreu um erro no servidor.'
     
     divCheckbox.appendChild(checkbox)
-    divCheckbox.appendChild(msgErroApi)
+
+    const divMenu = document.createElement('div')
+    const divIntermediaria = document.createElement('div')
+    const menu = document.createElement('div')
+    const divOpcao = document.createElement('div')
+    const opcExcluir = document.createElement('button')
+    const iconLixeira = document.createElement('i')
+    const iconTresPontos = document.createElement('i')
+    const divMsgErroApi = document.createElement('div')
+
+    divIntermediaria.classList.add('divintermediaria', 'oculto')
+    iconLixeira.classList.add('fa-regular', 'fa-trash-can')
+    divMenu.id = 'menu'
+    iconTresPontos.classList.add('fa-solid', 'fa-ellipsis-vertical', 'botaoopcoes')
+    menu.classList.add('menu')
+
+    opcExcluir.classList.add('opcaoexcluir')
+    opcExcluir.textContent = 'Excluir'
+    divOpcao.classList.add('divopcao')
+
+    const divElementosEditarTitulo = document.createElement('div')
+    const divElementosEditarDescricao = document.createElement('div')
+    const divElementosExcluir = document.createElement('div')
+
+    divElementosEditarTitulo.classList.add('divelementoseditar')
+    divElementosEditarDescricao.classList.add('divelementoseditar')
+    divElementosExcluir.classList.add('divelementosexcluir')
+
+    divElementosEditarTitulo.dataset.propriedade = 'titulo'
+    divElementosEditarDescricao.dataset.propriedade = 'descricao'
+
+    divElementosEditarTitulo.appendChild(iconEditTitulo)
+    divElementosEditarTitulo.appendChild(btEditarTitulo)
+    divElementosEditarDescricao.appendChild(iconEditDescricao)
+    divElementosEditarDescricao.appendChild(btEditarDescricao)
+    divElementosExcluir.appendChild(iconLixeira)
+    divElementosExcluir.appendChild(opcExcluir)
+    divOpcao.appendChild(divElementosEditarTitulo)
+    divOpcao.appendChild(divElementosEditarDescricao)
+    divOpcao.appendChild(divElementosExcluir)
+    divIntermediaria.appendChild(menu)
+    menu.appendChild(divOpcao)
+    divMenu.appendChild(divIntermediaria)
+    divMenu.appendChild(iconTresPontos)
+
+    const divContainer = document.createElement('div')
+    divContainer.classList.add('containerintermediario')
+    divContainer.appendChild(div)
+    divMsgErroApi.appendChild(msgErroApi)
+    divContainer.appendChild(divMsgErroApi)
+    divContainer.appendChild(divMenu)
 
     li.appendChild(divCheckbox)
-    li.appendChild(div)
+    li.appendChild(divContainer)
 
     return li
 }
@@ -327,17 +385,24 @@ function editarTarefa(div, elemento) {
     const conteudo = div.querySelector('.conteudo')
 
     conteudo.classList.add('oculto')
-    elemento.classList.add('oculto')
 
     btSalvar.classList.remove('oculto')
 
-    const descricao = document.createElement('textarea')
+    if (div.dataset.propriedade === 'titulo') {
+        const input = document.createElement('input')
+        input.classList.add('input-propriedade')
+        input.value = conteudo.textContent
 
-    descricao.classList.add('input-propriedade')
+        return input
+    }
 
-    descricao.value = conteudo.textContent
+    const input = document.createElement('textarea')
+
+    input.classList.add('input-propriedade', 'input-descricao')
+
+    input.value = conteudo.textContent
     
-    return descricao
+    return input
 }
 
 export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa, limparLista, atualizarContador, zerarContadores}

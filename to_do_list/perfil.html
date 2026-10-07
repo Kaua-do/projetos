@@ -23,6 +23,61 @@
             display: none;
         }
 
+        #modalconfirmacao {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+
+            background-color: rgb(0 0 0 / 50%);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modalconfirmacao.oculto {
+            display: none;
+        }
+
+        .conteudomodal {
+            width: 100%;
+            max-width: 400px;
+            padding: 24px;
+
+            background-color: white;
+
+            border-radius: 12px;
+        }
+
+        .conteudomodal h2 {
+            margin-top: 0px;
+        }
+
+        #informacaotarefa {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 5px;
+            border-radius: 12px;
+            padding: 10px;
+            background-color: rgba(128, 128, 128, 0.103);
+            margin-bottom: 8px;
+        }
+
+        #informacaotarefa .informacao, .aviso {
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+
+        #informacaotarefa .aviso {
+            margin-top: px;
+        }
+
+        .botoesmodal {
+            display: flex;
+            justify-content: end;
+        }
+
         #perfil {
             border: 1px solid black;
             border-radius: 6px;
@@ -220,6 +275,52 @@
             display: none;
         }
 
+        #menu {
+            display: flex;
+            justify-content: end;
+            margin: 0px;
+        }
+
+        #menu .menu {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 110px;
+            border: 1px solid black;
+            border-radius: 8px;
+        }
+
+        #menu .menu i {
+            margin: 0px;
+            border: 0px;
+        }
+
+        #menu i {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 1px solid black;
+            width: 30px;
+            height: 30px;
+            border-radius: 6px;
+            margin-left: 5px;
+        }
+
+        #menu .menu .divopcao {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+        }
+
+        #menu .menu .divopcao  div {
+            display: flex;
+        }
+
+        #menu .menu .divopcao .opcaoexcluir {
+            border: 0px;
+            height: 25px;
+        }
+
         #divlista {
             border: 1px solid black;
             border-radius: 6px;
@@ -239,21 +340,58 @@
             border-radius: 6px;
         }
 
+        #lista li .containerintermediario {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            width: 100%;
+        }
+
+        #lista li .containerintermediario .editar-propriedade {
+            border: 0px;
+        }
+
+        #lista li .containerintermediario .divopcao div {
+            width: 100%;
+        }
+
         #lista li .container {
             padding: 8px;
         }
 
-        #lista li .container .propriedade {
-            margin-bottom: 5px;
-        }
-
-        #lista li .container .editar-propriedade {
-            font-size: 0.7em;
+        #lista li .container .excluir {
+            width: 70px;
+            border-radius: 6px;
         }
 
         #lista li .container .propriedade {
             display: flex;
-            gap: 20px;
+            gap: 12px;
+            margin-bottom: 5px;
+        }
+
+        #lista li .container .divtitulo h3{
+            margin: 0px;
+            height: 20px;
+        }
+
+        #lista li .container .divdescricao p.conteudo {
+            max-width: 300px;
+            overflow-wrap: anywhere;
+            white-space: normal;
+            margin: 0px;
+        }
+
+        #lista li .container .editar-propriedade, .salvar {
+            font-size: 0.7em;
+            width: 70px;
+            height: 20px;
+            border-radius: 6px;
+
+        }
+
+        #lista li .container .propriedade .input-descricao {
+            width: 180px;
+            height: 80px;
         }
 
         .div-checkbox {
@@ -305,6 +443,23 @@
 </head>
 <body>
     <main>
+        <div id="modalconfirmacao" class="oculto">
+            <div class="conteudomodal">
+                <h2><i class="fa-solid fa-triangle-exclamation"></i>  Excluir tarefa?</h2>
+
+                <p id="mensagemconfirmacao">Tem que certeza que deseja excluir essa tarefa?</p>
+
+                <div id="informacaotarefa">
+                    <h3 class="informacao"></h3>
+                    <p class="aviso">Está ação não pode ser desfeita.</p>
+                </div>
+
+                <div class="botoesmodal">
+                    <button class="cancelar">Cancelar</button>
+                    <button class="confirmar">Excluir</button>
+                </div>
+            </div>
+        </div>
         <div id="perfil">
             <div class="conteudo">
                 <span><i class="fa-solid fa-circle-user"></i></span>

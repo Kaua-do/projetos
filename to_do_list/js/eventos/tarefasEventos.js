@@ -5,11 +5,16 @@ import { sairUsuarioService, verificarAcessoPagina } from "../servicos/authServi
 import { validarTexto, validarTitulo } from "../validacao/validacao.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
 import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon} from "../dom/domUtils.js";
-import { tarefas } from "../estado/tarefasState.js";
+import { tarefas, obterTarefa} from "../estado/tarefasState.js";
 import { filtrarTarefas } from "../utils/ordenacao.js";
 import { inicializarUsuario } from "../servicos/perfilService.js";
 
 iniciar()
+
+let tarefaPendenteExclusao = {
+    id: null,
+    msgErro: null
+}
 
 async function iniciar() {
     try {
@@ -178,44 +183,108 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
     }
 
     const id = li.dataset.id 
+
+    if (elemento.classList.contains('salvar')) {
+        const divConteudo = elemento.closest('.propriedade')
+        tentarSalvarTarefa(id, divConteudo)
+    }
     
-    if (elemento.classList.contains('editar-propriedade')) {
-        const propriedade = elemento.closest('.propriedade')
-        const msgErro = propriedade.querySelector('.msgerro')
+    if (elemento.classList.contains('botaoopcoes')) {
+        const divMenu = elemento.closest('#menu')
+        const divIntermediaria = divMenu.querySelector('.divintermediaria')
         
-        const input = editarTarefa(propriedade, elemento)
-        
-        input.addEventListener('keydown', async (evento) => {
-            if (evento.key === 'Enter') {
-                tentarSalvarTarefa(id, elemento)
-            }
+        if (divIntermediaria.classList.contains('oculto')) {
+            desocultarElemento(divIntermediaria)
 
-            apagarMensagemErro(msgErro)
-        })
+            return
+        }
 
-        propriedade.insertBefore(input, elemento)
-
-        input.focus()
+        ocultarElemento(divIntermediaria)
 
         return
     }
 
-    if (elemento.classList.contains('salvar')) {
-        tentarSalvarTarefa(id, elemento)
+    if (elemento.closest('.menu')) {
+
+        if (elemento.closest('.divelementoseditar')) {
+            const divElementos = elemento.closest('.divelementoseditar')
+            const container = elemento.closest('.containerintermediario')
+            const divParte = container.querySelector('.div-parteum')
+            const propriedade = divElementos.dataset.propriedade
+            let divConteudo = null
+
+            if (propriedade === 'titulo') {
+                divConteudo = divParte.querySelector('.divtitulo')
+            } else {
+                divConteudo = divParte.querySelector('.divdescricao')
+            }
+            
+            const conteudo = divConteudo.querySelector('.conteudo')
+            const msgErro = divConteudo.querySelector('.msgerro')
+            
+            const input = editarTarefa(divConteudo)
+            
+            input.addEventListener('keydown', async (evento) => {
+                if (evento.key === 'Enter') {
+                    tentarSalvarTarefa(id, divConteudo)
+                }
+
+                apagarMensagemErro(msgErro)
+            })
+
+            divConteudo.insertBefore(input, conteudo)
+
+            input.focus()
+
+            return
+        }
+
+        if (elemento.closest('.divelementosexcluir')) {
+            const mensagem = tarefasDom.modalConfirmacao.querySelector('.informacao')
+            const msgErro = li.querySelector('.msgerro-api')
+
+            const tarefa = obterTarefa(id)
+
+            if (!tarefa) {
+                return
+            }
+
+            tarefaPendenteExclusao.id = id
+            tarefaPendenteExclusao.msgErro = msgErro
+
+            desocultarElemento(tarefasDom.modalConfirmacao)
+            mensagem.textContent = tarefa.titulo
+
+            return
+        }
+    }
+})
+
+tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
+    const elemento = evento.target
+    
+    if (elemento.classList.contains('cancelar')) {
+        const mensagem = tarefasDom.modalConfirmacao.querySelector('.informacao')
+        mensagem.textContent = ''
+        ocultarElemento(tarefasDom.modalConfirmacao)
+        tarefaPendenteExclusao.id = null
+        tarefaPendenteExclusao.msgErro = null
+        return
     }
 
-    if (elemento.classList.contains('excluir')) {
-        const msgErro = li.querySelector('.msgerro-api')
-
+    if (elemento.classList.contains('confirmar')) {
         alterarEstadoBotao(elemento, true, 'Excluindo...')
 
         try {
-            await excluirTarefa(id)
-
+            await excluirTarefa(tarefaPendenteExclusao.id)
+            
             prepararTarefasParaRenderizar()
         } catch (erro) {
-            mostrarMensagemErro(msgErro, tratarErro(erro))
+            mostrarMensagemErro(tarefaPendenteExclusao.msgErro, tratarErro(erro))
         } finally {
+            ocultarElemento(tarefasDom.modalConfirmacao)
+            tarefaPendenteExclusao.id = null
+            tarefaPendenteExclusao.msgErro = null
             alterarEstadoBotao(elemento, false, 'Excluir')
         }
         
@@ -223,15 +292,13 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
     }
 })
 
-async function tentarSalvarTarefa(id, elemento) {
-    const propriedade = elemento.closest('.propriedade')
-    const msgErro = propriedade.querySelector('.msgerro')
-    const input = propriedade.querySelector('.input-propriedade')
-    const btEditar = propriedade.querySelector('.editar-propriedade')
-    const salvar = propriedade.querySelector('.salvar')
-    const elementoConteudo = propriedade.querySelector('.conteudo')
-    const property = propriedade.dataset.propriedade
-
+async function tentarSalvarTarefa(id, divConteudo) {
+    const msgErro = divConteudo.querySelector('.msgerro')
+    const input = divConteudo.querySelector('.input-propriedade')
+    const salvar = divConteudo.querySelector('.salvar')
+    const elementoConteudo = divConteudo.querySelector('.conteudo')
+    const property = divConteudo.dataset.propriedade
+    
     if (property === 'titulo') {
         const erroTitulo = validarTitulo(input.value)
 
@@ -260,7 +327,6 @@ async function tentarSalvarTarefa(id, elemento) {
         elementoConteudo.textContent = dados[property]
 
         ocultarElemento(salvar)
-        desocultarElemento(btEditar)
         desocultarElemento(elementoConteudo)
         apagarElemento(input)
 

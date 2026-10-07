@@ -48,4 +48,8 @@ function concluirTarefaEstado(id, tarefaDados) {
     }
 }
 
-export {tarefas, definirTarefas, adicionarTarefaEstado, apagarTarefa, atualizarPrioridadeEstado, concluirTarefaEstado, editarTarefaEstado}
+function obterTarefa(id) {
+    return tarefas.find(tarefa => tarefa.id === id)
+}
+
+export {tarefas, definirTarefas, adicionarTarefaEstado, apagarTarefa, atualizarPrioridadeEstado, concluirTarefaEstado, editarTarefaEstado, obterTarefa}
