@@ -19,8 +19,8 @@ function validarTitulo(tituloRecebido) {
 function validarTexto(textoRecebido) {
     const texto = textoRecebido.trim()
 
-    if (texto.length > 200) {
-        return 'Máximo de 200 caracteres.'
+    if (texto.length > 150) {
+        return 'Máximo de 150 caracteres.'
     }
 
     return null
@@ -50,4 +50,21 @@ function validarNome(nome) {
     return null
 }
 
-export {validarTitulo, validarTexto, validarSenha, validarNome}
+function validarCampoEmailLogin(email) {
+    
+    if (email.trim() === '') {
+        return 'Digite o email.'
+    }
+
+    return null
+}
+
+function validarCampoSenhaLogin(senha) {
+    if (senha.trim() === '') {
+        return 'Digite a senha.'
+    }
+
+    return null
+}
+
+export {validarTitulo, validarTexto, validarSenha, validarNome, validarCampoEmailLogin as validarCampoEmailLogin, validarCampoSenhaLogin}

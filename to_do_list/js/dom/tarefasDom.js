@@ -25,19 +25,71 @@ const tarefasDom = {
     modalConfirmacao: document.querySelector('#modalconfirmacao')
 }
 
-function atualizarContador(tipo) {
+function aplicarAparenciaErro(elemento) {
+    elemento.classList.add('erro')
+}
+
+function retirarAparenciaErro(elemento) {
+    elemento.classList.remove('erro')
+}
+
+function cordenarAplicarAparenciaErro(contador, tipo, caracteres) {
     if (tipo === 'titulo') {
-        tarefasDom.contadorTitulo.textContent = `${tarefasDom.titulo.value.length}/20`
+
+        if (caracteres === 20) {
+            aplicarAparenciaErro(contador)
+        } else {
+            retirarAparenciaErro(contador)
+        }
     }
 
     if (tipo === 'descricao') {
-        tarefasDom.contadorDescricao.textContent = `${tarefasDom.descricao.value.length}/200`
+
+        if (caracteres === 150) {
+            aplicarAparenciaErro(contador)
+        } else {
+            retirarAparenciaErro(contador)
+        }
     }
 }
 
-function zerarContadores() {
+function atualizarContadorCriacao(tipo) {
+    if (tipo === 'titulo') {
+        const contador = tarefasDom.contadorTitulo
+        const caracteres = tarefasDom.titulo.value.length
+
+        contador.textContent = `${caracteres}/20`
+        
+        cordenarAplicarAparenciaErro(contador, tipo, caracteres)
+    }
+
+    if (tipo === 'descricao') {
+        const contador = tarefasDom.contadorDescricao
+        const caracteres = tarefasDom.descricao.value.length
+
+        contador.textContent = `${caracteres}/150`
+
+        cordenarAplicarAparenciaErro(contador, tipo, caracteres)
+    }
+}
+
+function atualizarContadorTarefa(caracteres, contador, tipo) {
+    if (tipo === 'titulo') {
+        contador.textContent = `${caracteres}/20`
+
+        cordenarAplicarAparenciaErro(contador, tipo, caracteres)
+    }
+
+    if (tipo === 'descricao') {
+        contador.textContent = `${caracteres}/150`
+
+        cordenarAplicarAparenciaErro(contador, tipo, caracteres)
+    }
+}
+
+function zerarContadoresCriacao() {
     tarefasDom.contadorTitulo.textContent = `0/20`
-    tarefasDom.contadorDescricao.textContent = `0/200`
+    tarefasDom.contadorDescricao.textContent = `0/150`
 }
 
 function limparLista() {
@@ -191,6 +243,10 @@ function criarTarefaElemento(tarefa) {
     prioridadeMedia.textContent = 'Media'
     prioridadeAlta.textContent = 'Alta'
 
+    prioridadeBaixa.classList.add('verde') 
+    prioridadeMedia.classList.add('amarelo') 
+    prioridadeAlta.classList.add('vermelho') 
+
     const spanStatus = document.createElement('span')
     const spanDtCriacao = document.createElement('span')
     const spanDtConclusao = document.createElement('span')
@@ -237,18 +293,34 @@ function criarTarefaElemento(tarefa) {
 
     const mensagemErroTitulo = document.createElement('p')
     const mensagemErroDescricao = document.createElement('p')
-
-    mensagemErroTitulo.classList.add('msgerro')
-    mensagemErroTitulo.classList.add('oculto')
-    mensagemErroDescricao.classList.add('msgerro')
-    mensagemErroDescricao.classList.add('oculto')
+   
+    mensagemErroTitulo.classList.add('msgerro','oculto', 'erro')
+    mensagemErroDescricao.classList.add('msgerro','oculto', 'erro')
 
     div.classList.add('container')
 
-    divTitulo.appendChild(h3Titulo)
-    divTitulo.appendChild(btEditarTitulo)
-    divTitulo.appendChild(btSalvarTitulo)
-    divTitulo.appendChild(mensagemErroTitulo)
+    const divMsgTitulo = document.createElement('div')
+    divMsgTitulo.classList.add('divmsgtitulo')
+    const contadorTitulo = document.createElement('p')
+    contadorTitulo.classList.add('contador', 'oculto')
+    contadorTitulo.textContent = '0/20'
+    const divDoMsgErroTitulo = document.createElement('div')
+    const divDoContadorTitulo = document.createElement('div')
+
+    divDoMsgErroTitulo.appendChild(mensagemErroTitulo)
+    divDoContadorTitulo.appendChild(contadorTitulo)
+
+    divMsgTitulo.appendChild(divDoMsgErroTitulo)
+    divMsgTitulo.appendChild(divDoContadorTitulo)
+
+    const divIntermediariaTitulo = document.createElement('div')
+    divIntermediariaTitulo.classList.add('divintermediaria')
+
+    divIntermediariaTitulo.appendChild(h3Titulo)
+    divIntermediariaTitulo.appendChild(btSalvarTitulo)
+
+    divTitulo.appendChild(divIntermediariaTitulo)
+    divTitulo.appendChild(divMsgTitulo)
 
     const iconEditDescricao = document.createElement('i')
     iconEditDescricao.classList.add('fa-regular', 'fa-pen-to-square')
@@ -260,11 +332,29 @@ function criarTarefaElemento(tarefa) {
     if (tarefa.descricao === '') {
         pDescricao.classList.add('oculto')
     }
+
+    const divMsgDescricao = document.createElement('div')
+    divMsgDescricao.classList.add('divmsgdescricao')
+    const contadorDescricao = document.createElement('p')
+    contadorDescricao.classList.add('contador', 'oculto')
+    contadorDescricao.textContent = '0/150'
+    const divDoMsgErroDescricao = document.createElement('div')
+    const divDoContadorDescricao = document.createElement('div')
+
+    divDoMsgErroDescricao.appendChild(mensagemErroDescricao)
+    divDoContadorDescricao.appendChild(contadorDescricao)
+
+    divMsgDescricao.appendChild(divDoMsgErroDescricao)
+    divMsgDescricao.appendChild(divDoContadorDescricao)
+
+    const divIntermediariaDescricao = document.createElement('div')
+    divIntermediariaDescricao.classList.add('divintermediaria')
     
-    divDescricao.appendChild(pDescricao)
-    divDescricao.appendChild(btEditarDescricao)
-    divDescricao.appendChild(btSalvarDescricao)
-    divDescricao.appendChild(mensagemErroDescricao)
+    divIntermediariaDescricao.appendChild(pDescricao)
+    divIntermediariaDescricao.appendChild(btSalvarDescricao)
+
+    divDescricao.appendChild(divIntermediariaDescricao)
+    divDescricao.appendChild(divMsgDescricao)
 
     btEditarDescricao.classList.add('editar-propriedade')
     divTitulo.classList.add('divtitulo', 'propriedade')
@@ -286,6 +376,43 @@ function criarTarefaElemento(tarefa) {
     divDtConclusao.appendChild(iconCalendarioDois)
     divDtConclusao.appendChild(spanPropriedadeDtConclusao)
     divDtConclusao.appendChild(spanDtConclusao)
+
+    const menu = document.createElement('div')
+    menu.id = 'divmenu'
+    menu.classList.add('menu')
+
+    const divOpcao = document.createElement('div')
+
+    const iconLixeira = document.createElement('i')
+    iconLixeira.classList.add('fa-regular', 'fa-trash-can')
+
+    const opcExcluir = document.createElement('button')
+    opcExcluir.classList.add('opcaoexcluir')
+    opcExcluir.textContent = 'Excluir'
+
+    const divElementosEditarTitulo = document.createElement('div')
+    const divElementosEditarDescricao = document.createElement('div')
+    const divElementosExcluir = document.createElement('div')
+
+    divElementosEditarTitulo.classList.add('divelementoseditar', 'divelementoseditartitulo')
+    divElementosEditarDescricao.classList.add('divelementoseditar', 'divelementoseditardescricao')
+    divElementosExcluir.classList.add('divelementosexcluir')
+
+    divElementosEditarTitulo.dataset.propriedade = 'titulo'
+    divElementosEditarDescricao.dataset.propriedade = 'descricao'
+
+    divElementosEditarTitulo.appendChild(iconEditTitulo)
+    divElementosEditarTitulo.appendChild(btEditarTitulo)
+
+    divElementosEditarDescricao.appendChild(iconEditDescricao)
+    divElementosEditarDescricao.appendChild(btEditarDescricao)
+
+    divElementosExcluir.appendChild(iconLixeira)
+    divElementosExcluir.appendChild(opcExcluir)
+
+    divOpcao.appendChild(divElementosEditarTitulo)
+    divOpcao.appendChild(divElementosEditarDescricao)
+    divOpcao.appendChild(divElementosExcluir)
 
     const divParteUm = document.createElement('div')
     divParteUm.classList.add('div-parteum')
@@ -318,61 +445,30 @@ function criarTarefaElemento(tarefa) {
     checkbox.checked = tarefa.status
     const msgErroApi = document.createElement('p')
     msgErroApi.classList.add('msgerro-api')
-    msgErroApi.classList.add('ocult')
-    msgErroApi.textContent = 'Ocoreu um erro no servidor.'
+    msgErroApi.classList.add('oculto', 'erro')
     
-    divCheckbox.appendChild(checkbox)
-
-    const divMenu = document.createElement('div')
-    const divIntermediaria = document.createElement('div')
-    const menu = document.createElement('div')
-    const divOpcao = document.createElement('div')
-    const opcExcluir = document.createElement('button')
-    const iconLixeira = document.createElement('i')
     const iconTresPontos = document.createElement('i')
     const divMsgErroApi = document.createElement('div')
 
-    divIntermediaria.classList.add('divintermediaria', 'oculto')
-    iconLixeira.classList.add('fa-regular', 'fa-trash-can')
-    divMenu.id = 'menu'
+    divCheckbox.appendChild(checkbox)
+
+    divMsgErroApi.classList.add('divmsgerroapi')
     iconTresPontos.classList.add('fa-solid', 'fa-ellipsis-vertical', 'botaoopcoes')
-    menu.classList.add('menu')
 
-    opcExcluir.classList.add('opcaoexcluir')
-    opcExcluir.textContent = 'Excluir'
-    divOpcao.classList.add('divopcao')
+    divOpcao.classList.add('divopcao', 'oculto')
 
-    const divElementosEditarTitulo = document.createElement('div')
-    const divElementosEditarDescricao = document.createElement('div')
-    const divElementosExcluir = document.createElement('div')
+    const areaMenu = document.createElement('div')
+    areaMenu.classList.add('areamenu')
 
-    divElementosEditarTitulo.classList.add('divelementoseditar')
-    divElementosEditarDescricao.classList.add('divelementoseditar')
-    divElementosExcluir.classList.add('divelementosexcluir')
-
-    divElementosEditarTitulo.dataset.propriedade = 'titulo'
-    divElementosEditarDescricao.dataset.propriedade = 'descricao'
-
-    divElementosEditarTitulo.appendChild(iconEditTitulo)
-    divElementosEditarTitulo.appendChild(btEditarTitulo)
-    divElementosEditarDescricao.appendChild(iconEditDescricao)
-    divElementosEditarDescricao.appendChild(btEditarDescricao)
-    divElementosExcluir.appendChild(iconLixeira)
-    divElementosExcluir.appendChild(opcExcluir)
-    divOpcao.appendChild(divElementosEditarTitulo)
-    divOpcao.appendChild(divElementosEditarDescricao)
-    divOpcao.appendChild(divElementosExcluir)
-    divIntermediaria.appendChild(menu)
-    menu.appendChild(divOpcao)
-    divMenu.appendChild(divIntermediaria)
-    divMenu.appendChild(iconTresPontos)
+    areaMenu.appendChild(divOpcao)
+    areaMenu.appendChild(iconTresPontos)
+    divCheckbox.appendChild(areaMenu)
 
     const divContainer = document.createElement('div')
     divContainer.classList.add('containerintermediario')
     divContainer.appendChild(div)
     divMsgErroApi.appendChild(msgErroApi)
     divContainer.appendChild(divMsgErroApi)
-    divContainer.appendChild(divMenu)
 
     li.appendChild(divCheckbox)
     li.appendChild(divContainer)
@@ -380,7 +476,7 @@ function criarTarefaElemento(tarefa) {
     return li
 }
 
-function editarTarefa(div, elemento) {
+function editarTarefa(div) {
     const btSalvar = div.querySelector('.salvar')
     const conteudo = div.querySelector('.conteudo')
 
@@ -392,6 +488,7 @@ function editarTarefa(div, elemento) {
         const input = document.createElement('input')
         input.classList.add('input-propriedade')
         input.value = conteudo.textContent
+        input.maxLength = '20'
 
         return input
     }
@@ -400,9 +497,10 @@ function editarTarefa(div, elemento) {
 
     input.classList.add('input-propriedade', 'input-descricao')
 
+    input.maxLength = '150'
     input.value = conteudo.textContent
     
     return input
 }
 
-export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa, limparLista, atualizarContador, zerarContadores}
+export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa}

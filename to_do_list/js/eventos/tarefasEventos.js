@@ -1,4 +1,4 @@
-import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContador, zerarContadores} from "../dom/tarefasDom.js";
+import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa} from "../dom/tarefasDom.js";
 import { perfilDom, mostrarPerfil } from "../dom/perfilDom.js";
 import { carregarTarefas, adicionarTarefa, salvarTarefa, excluirTarefa, atualizarPrioridade, concluirTarefa } from "../servicos/tarefasService.js";
 import { sairUsuarioService, verificarAcessoPagina } from "../servicos/authService.js";
@@ -74,12 +74,12 @@ tarefasDom.descricao.addEventListener('keydown', (evento) => {
 })
 
 tarefasDom.titulo.addEventListener('input', () => {
-    atualizarContador('titulo')
+    atualizarContadorCriacao('titulo')
     apagarMensagemErro(tarefasDom.mensagemErroTitulo)
 })
 
 tarefasDom.descricao.addEventListener('input', () => {
-    atualizarContador('descricao')
+    atualizarContadorCriacao('descricao')
     apagarMensagemErro(tarefasDom.mensagemErroDescricao)
 })
 
@@ -109,7 +109,7 @@ async function tentarAdicionarTarefa() {
 
         limparValueElemento(tarefasDom.titulo)
         limparValueElemento(tarefasDom.descricao)
-        zerarContadores()
+        zerarContadoresCriacao()
     } catch (erro) {
         mostrarMensagemErro(tarefasDom.mensagemErroTitulo, tratarErro(erro))
     } finally {
@@ -185,31 +185,39 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
     const id = li.dataset.id 
 
     if (elemento.classList.contains('salvar')) {
-        const divConteudo = elemento.closest('.propriedade')
-        tentarSalvarTarefa(id, divConteudo)
+        const divPropriedade = elemento.closest('.propriedade')
+        const propriedade = divPropriedade.dataset.propriedade
+        let divElementos = null
+
+        if (propriedade === 'titulo') {
+            divElementos = li.querySelector('.divelementoseditartitulo')
+        } else {
+            divElementos = li.querySelector('.divelementoseditardescricao')
+        }
+
+        tentarSalvarTarefa(id, divPropriedade, divElementos)
     }
     
     if (elemento.classList.contains('botaoopcoes')) {
-        const divMenu = elemento.closest('#menu')
-        const divIntermediaria = divMenu.querySelector('.divintermediaria')
+        const divMenu = elemento.closest('.div-checkbox')
+        const menu = divMenu.querySelector('.divopcao')
         
-        if (divIntermediaria.classList.contains('oculto')) {
-            desocultarElemento(divIntermediaria)
+        if (menu.classList.contains('oculto')) {
+            desocultarElemento(menu)
 
             return
         }
 
-        ocultarElemento(divIntermediaria)
+        ocultarElemento(menu)
 
         return
     }
 
-    if (elemento.closest('.menu')) {
-
+    if (elemento.closest('.divopcao')) {
+        
         if (elemento.closest('.divelementoseditar')) {
             const divElementos = elemento.closest('.divelementoseditar')
-            const container = elemento.closest('.containerintermediario')
-            const divParte = container.querySelector('.div-parteum')
+            const divParte = li.querySelector('.div-parteum')
             const propriedade = divElementos.dataset.propriedade
             let divConteudo = null
 
@@ -219,28 +227,43 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
                 divConteudo = divParte.querySelector('.divdescricao')
             }
             
+            const contador = divConteudo.querySelector('.contador')
             const conteudo = divConteudo.querySelector('.conteudo')
             const msgErro = divConteudo.querySelector('.msgerro')
             
             const input = editarTarefa(divConteudo)
-            
+
+            atualizarContadorTarefa(input.value.length, contador, propriedade)
+
             input.addEventListener('keydown', async (evento) => {
                 if (evento.key === 'Enter') {
-                    tentarSalvarTarefa(id, divConteudo)
+                    const divOpcao = elemento.closest('.divopcao')
+                    
+                    ocultarElemento(divOpcao)
+                    tentarSalvarTarefa(id, divConteudo, divElementos) 
+                } else {
+                    apagarMensagemErro(msgErro)
                 }
-
-                apagarMensagemErro(msgErro)
             })
 
-            divConteudo.insertBefore(input, conteudo)
+            input.addEventListener('input', () => {
+                atualizarContadorTarefa(input.value.length, contador, propriedade)
+            })
 
+            const divIntermediaria = divConteudo.querySelector('.divintermediaria')
+            
+            divIntermediaria.insertBefore(input, conteudo)
+
+            ocultarElemento(divElementos)
+            desocultarElemento(contador)
             input.focus()
 
             return
         }
 
         if (elemento.closest('.divelementosexcluir')) {
-            const mensagem = tarefasDom.modalConfirmacao.querySelector('.informacao')
+            const divOpcao = document.querySelector('.divopcao')
+            const mensagem = tarefasDom.modalConfirmacao.querySelector('.titulotarefa')
             const msgErro = li.querySelector('.msgerro-api')
 
             const tarefa = obterTarefa(id)
@@ -252,6 +275,7 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
             tarefaPendenteExclusao.id = id
             tarefaPendenteExclusao.msgErro = msgErro
 
+            ocultarElemento(divOpcao)
             desocultarElemento(tarefasDom.modalConfirmacao)
             mensagem.textContent = tarefa.titulo
 
@@ -260,11 +284,21 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
     }
 })
 
+document.addEventListener('click', (evento) => {
+    const areaMenu = document.querySelector('.areamenu')
+
+    if (!areaMenu.contains(evento.target)) {
+        const divOpcao = areaMenu.querySelector('.divopcao')
+
+        ocultarElemento(divOpcao)
+    }
+})
+
 tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
     const elemento = evento.target
     
     if (elemento.classList.contains('cancelar')) {
-        const mensagem = tarefasDom.modalConfirmacao.querySelector('.informacao')
+        const mensagem = tarefasDom.modalConfirmacao.querySelector('.titulotarefa')
         mensagem.textContent = ''
         ocultarElemento(tarefasDom.modalConfirmacao)
         tarefaPendenteExclusao.id = null
@@ -292,24 +326,28 @@ tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
     }
 })
 
-async function tentarSalvarTarefa(id, divConteudo) {
+async function tentarSalvarTarefa(id, divConteudo, divElementos) {
     const msgErro = divConteudo.querySelector('.msgerro')
     const input = divConteudo.querySelector('.input-propriedade')
     const salvar = divConteudo.querySelector('.salvar')
     const elementoConteudo = divConteudo.querySelector('.conteudo')
     const property = divConteudo.dataset.propriedade
+    const contador = divConteudo.querySelector('.contador')
     
     if (property === 'titulo') {
         const erroTitulo = validarTitulo(input.value)
 
         if (erroTitulo) {
+            input.focus()
             mostrarMensagemErro(msgErro, erroTitulo)
+            console.log(msgErro, erroTitulo)
             return
         }
     } else {
         const erroTexto = validarTexto(input.value)
 
         if (erroTexto) {
+            input.focus()
             mostrarMensagemErro(msgErro, erroTexto)
             return
         }
@@ -326,6 +364,13 @@ async function tentarSalvarTarefa(id, divConteudo) {
         
         elementoConteudo.textContent = dados[property]
 
+        if (property === 'titulo') {
+            contador.textContent = '0/20'
+        } else {
+            contador.textContent = '0/150'
+        }
+        
+        ocultarElemento(contador)
         ocultarElemento(salvar)
         desocultarElemento(elementoConteudo)
         apagarElemento(input)
@@ -335,6 +380,7 @@ async function tentarSalvarTarefa(id, divConteudo) {
     } catch (erro) {
         mostrarMensagemErro(msgErro, tratarErro(erro))
     } finally {
+        desocultarElemento(divElementos)
         alterarEstadoBotao(salvar, false, 'Salvar')
     }
 

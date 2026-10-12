@@ -1,8 +1,79 @@
-import { domAuth } from "../dom/authDom.js";
+import { domAuth, ocultarElemento, desocultarElemento, adicionarAnimacaoErro, removerAnimacaoErro} from "../dom/authDom.js";
 import { cadastrarUsuarioService, entrarUsuarioService } from "../servicos/authService.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
 import { mostrarMensagemErro, apagarMensagemErro } from "../dom/domUtils.js";
-import { validarSenha, validarNome } from "../validacao/validacao.js";
+import { validarSenha, validarNome, validarCampoEmailLogin, validarCampoSenhaLogin } from "../validacao/validacao.js";
+
+document.addEventListener('click', (evento) => {
+    const elemento = evento.target
+    const divElementos = elemento.closest('.elementos')
+
+    if (elemento.classList.contains('fa-x')) {
+        const input = divElementos.querySelector('input')
+    
+        input.value = ''
+        input.focus()
+
+        return
+    }
+
+    if (elemento.closest('.elementos')) {
+        const input = divElementos.querySelector('input')
+
+        input.focus()
+
+        return
+    }
+
+    if (elemento.classList.contains('login')) {
+        ocultarElemento(domAuth.telaCadastro)
+        desocultarElemento(domAuth.telaLogin)
+        return
+    }
+
+    if (elemento.classList.contains('cadastro')) {
+        ocultarElemento(domAuth.telaLogin)
+        desocultarElemento(domAuth.telaCadastro)
+        return
+    }
+})
+
+document.addEventListener('focusin', (evento) => {
+    const elemento = evento.target
+    
+    if (elemento.classList.contains('input')) {
+        const divElementos = elemento.closest('.elementos')
+        const limparCampo = divElementos.querySelector('.limparcampo')
+
+        desocultarElemento(limparCampo)
+    }
+})
+
+document.addEventListener('focusout', (evento) => {
+    const elemento = evento.target
+
+    if (elemento.classList.contains('input')) {
+        const divElementos = elemento.closest('.elementos')
+        const limparCampo = divElementos.querySelector('.limparcampo')
+
+        ocultarElemento(limparCampo)
+    }
+})
+
+document.addEventListener('mousedown', (evento) => {
+    
+    if (evento.target.closest('.limparcampo')) {
+        evento.preventDefault()
+    }
+})
+
+document.addEventListener('input', (evento) => {
+    const elemento = evento.target
+
+    const campo = elemento.closest('.elementos')
+    removerAnimacaoErro(campo)
+    domAuth.mensagemErroCadastro.textContent = ''
+})
 
 domAuth.btCadastrar.addEventListener('click', async () => {
     const nome = domAuth.nomePerfil.value
@@ -10,7 +81,9 @@ domAuth.btCadastrar.addEventListener('click', async () => {
     const mensagemErroNome = validarNome(nome)
 
     if (mensagemErroNome) {
+        const campo = domAuth.nomePerfil.closest('.elementos')
         mostrarMensagemErro(domAuth.mensagemErroCadastro, mensagemErroNome)
+        adicionarAnimacaoErro(campo)
         return
     }
 
@@ -18,10 +91,32 @@ domAuth.btCadastrar.addEventListener('click', async () => {
     const senha = domAuth.senhaCadastro.value
     const confirmarSenha = domAuth.confirmarSenhaCadastro.value
 
+    const mensagemErroCampoEmail = validarCampoEmailLogin(email)
+    
+    if (mensagemErroCampoEmail) {
+        const campo = domAuth.emailCadastro.closest('.elementos')
+        mostrarMensagemErro(domAuth.mensagemErroCadastro, mensagemErroCampoEmail)
+        adicionarAnimacaoErro(campo)     
+        return
+    }
+
+    const mensagemErroCampoSenha = validarCampoSenhaLogin(senha)
+
+    if (mensagemErroCampoSenha) {
+        const campo = domAuth.senhaCadastro.closest('.elementos')
+        mostrarMensagemErro(domAuth.mensagemErroCadastro, mensagemErroCampoSenha)
+        adicionarAnimacaoErro(campo)     
+        return
+    }
+    
     const mensagemErroSenha = validarSenha(senha, confirmarSenha)
 
     if (mensagemErroSenha) {
+        const campoUm = domAuth.senhaCadastro.closest('.elementos')
+        const campoDois = domAuth.confirmarSenhaCadastro.closest('.elementos')
         mostrarMensagemErro(domAuth.mensagemErroCadastro, mensagemErroSenha)
+        adicionarAnimacaoErro(campoUm)
+        adicionarAnimacaoErro(campoDois)
         return
     }
 
@@ -36,7 +131,7 @@ domAuth.btCadastrar.addEventListener('click', async () => {
         apagarMensagemErro(domAuth.mensagemErroCadastro)
     } catch (erro) {
         mostrarMensagemErro(domAuth.mensagemErroCadastro, tratarErro(erro))
-    }
+    } 
     
 })
 
@@ -44,12 +139,33 @@ domAuth.btEntrar.addEventListener('click', async () => {
     const email = domAuth.emailLogin.value
     const senha = domAuth.senhaLogin.value
 
+    const mensagemErroCampoEmail = validarCampoEmailLogin(email)
+    
+    if (mensagemErroCampoEmail) {
+        const campo = domAuth.emailLogin.closest('.elementos')
+        mostrarMensagemErro(domAuth.mensagemErroLogin, mensagemErroCampoEmail)
+        adicionarAnimacaoErro(campo)     
+        return
+    }
+
+    const mensagemErroCampoSenha = validarCampoSenhaLogin(senha)
+
+    if (mensagemErroCampoSenha) {
+        const campo = domAuth.senhaLogin.closest('.elementos')
+        mostrarMensagemErro(domAuth.mensagemErroLogin, mensagemErroCampoSenha)
+        adicionarAnimacaoErro(campo)     
+        return
+    }
+
+    domAuth.btEntrar.textContent = 'Entrando...'
+
     try {
         await entrarUsuarioService(email, senha)
-        
+
         apagarMensagemErro(domAuth.mensagemErroLogin)
     } catch (erro) {
         mostrarMensagemErro(domAuth.mensagemErroLogin, tratarErro(erro))
+    } finally {
+        domAuth.btEntrar.textContent = 'Entrar'
     }
-    
 })
