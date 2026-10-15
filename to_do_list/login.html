@@ -41,6 +41,16 @@
             }
         }
 
+        @keyframes girar {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .carregando {
+            animation: girar 0.8s linear infinite;
+        }
+
         .campoinvalido {
             border-color: var(--cor-erro);
             box-shadow: 0 0 0 3px rgb(220 38 38 / 12%);
@@ -195,6 +205,17 @@
             text-decoration: underline;
         }
 
+        .botaoentrar {
+            position: relative;
+        }
+
+        .iconcarregamento {
+            position: absolute;
+            top: 41px;
+            left: 107px;
+            color: var(--cor-fundo);
+        }
+
         .jatemconta, .naotemconta {
             display: flex;
             justify-content: center;
@@ -213,6 +234,37 @@
             margin: 0px;
             font-size: 0.8em;
         }
+
+        .divsucesso {
+            height: 40px;
+        }
+
+        .elementosmensagemsucesso {
+            font-size: 0.7em;
+        }
+
+        .elementosmensagemsucesso {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .elementosmensagemsucesso.oculto {
+            display: none;
+        }
+
+        .elementosmensagemsucesso * {
+            color: var(--cor-sucesso);
+            margin: 0px;
+        }
+
+        .titulosucesso {
+            font-weight: 700;
+        }
+
+
+
+    
 
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
@@ -257,6 +309,12 @@
             <div class="diverro">
                 <p id="errocadastro" class="erro"></p>
             </div>
+            <div class="divsucesso">
+                <div class="elementosmensagemsucesso oculto" role="status" aria-live="polite">
+                    <h3 class="titulosucesso"><i class="fa-regular fa-circle-check"></i> Cadastro realizado!</h3>
+                    <p id="sucessocadastro" class="sucesso">Enviamos um link de confirmação para seu e-mail. Verifique sua caixa de entrada e, se necessário, a pasta de spam antes de entrar na sua conta.</p>
+                </div>
+            </div>
             <button id="cadastrar">Cadastrar</button>
             <div class="jatemconta">
                 <p>Já tem uma conta?</p>
@@ -286,7 +344,10 @@
             <div class="diverro">
                 <p id="errologin" class="erro"></p>
             </div>
-            <button id="entrar">Entrar</button>
+            <div class="botaoentrar">
+                <div class="iconcarregamento oculto"><i class="fa-solid fa-circle-notch"></i></div>
+                <button id="entrar">Entrar</button>
+            </div>
             <div class="naotemconta">
                 <p>Ainda não tem uma conta?</p>
                 <button id="cadastro" class="cadastro">Cadastrar</button>

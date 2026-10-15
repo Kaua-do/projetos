@@ -24,10 +24,23 @@ function apagarElemento(elemento) {
     elemento.remove()
 }
 
+function adicionarAnimacaoErro(elemento) {
+    elemento.classList.add('campoinvalido')
+}
+
+function removerAnimacaoErro(elemento) {
+    elemento.classList.remove('campoinvalido')
+}
+
+function alterarEstadoBotao(botao, estado, texto) {
+    botao.disabled = estado
+    botao.textContent = texto
+}
+
 function criarIcon(classe) {
     const icon = document.createElement('i')
     icon.classList.add('fa-solid', classe)
     return icon
 }
 
-export {mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon}
+export {mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon, adicionarAnimacaoErro, removerAnimacaoErro, alterarEstadoBotao}

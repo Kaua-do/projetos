@@ -15,7 +15,7 @@ async function adicionarTarefa(titulo, descricao) {
     const tarefaCriada = await criarTarefaApi(tarefa)
 
     adicionarTarefaEstado(tarefaCriada)
-
+    
     return tarefaCriada
 }
 

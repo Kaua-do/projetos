@@ -96,11 +96,6 @@ function limparLista() {
     tarefasDom.lista.innerHTML = ''
 }
 
-function alterarEstadoBotao(botao, desabilitado, texto) {
-    botao.disabled = desabilitado
-    botao.textContent = texto
-}
-
 function mostrarEstadoTarefa(mensagem) {
     tarefasDom.mostradorEstadoTarefas.textContent = mensagem
 }
@@ -109,8 +104,14 @@ function limparMostrarEstadoTarefa() {
     tarefasDom.mostradorEstadoTarefas.textContent = ''
 }
 
-function adicionarNaLista(tarefa) {
+function adicionarNaLista(tarefa, idTarefaRecemCriada) {
     const li = criarTarefaElemento(tarefa)
+    
+    if (tarefa.id === idTarefaRecemCriada) {
+        console.log('entrou')
+        li.classList.add('novatarefa')
+    }
+
     tarefasDom.lista.appendChild(li)
 }
 
@@ -123,6 +124,24 @@ function pegarFiltros() {
         ordenarPor: tarefasDom.ordenarPor.value,
         ordem: tarefasDom.ordem.value
     }
+}
+
+function atualizarAparenciaFiltros() {
+    const filtros = [
+        tarefasDom.filtroStatus,
+        tarefasDom.filtroPrioridade,
+        tarefasDom.filtroDtCriacao,
+        tarefasDom.filtroDtConclusao,
+        tarefasDom.ordenarPor,
+        tarefasDom.ordem
+    ]
+
+    filtros.forEach(filtro => {
+        const padrao = filtro.value === 'todas' || filtro.value === 'nenhum'
+        
+        filtro.classList.toggle('inativo', padrao)
+        filtro.classList.toggle('ativo', !padrao)
+    })
 }
 
 function atualizarOpcoesOrdem() {
@@ -165,9 +184,10 @@ function atualizarOpcoesOrdem() {
         opcUm.value = 'nenhum'
         opcUm.textContent = 'Nenhum'
         opcDois.style.display = 'none'
-
+        
         return
     }
+
     opcDois.style.display = ''
     
     opcUm.value = opcoesOrdem[ordenarPor].opcUm
@@ -189,13 +209,13 @@ function resetarFiltros() {
     tarefasDom.ordem.value = 'pendentes'
 }
 
-function renderizarTarefas(tarefas) {
+function renderizarTarefas(tarefas, idTarefaRecemCriada) {
     tarefasDom.lista.innerHTML = ''
 
     limparMostrarEstadoTarefa()
 
     for (const tarefa of tarefas) {
-        adicionarNaLista(tarefa)
+        adicionarNaLista(tarefa, idTarefaRecemCriada)
     }
 }
 
@@ -218,11 +238,19 @@ function criarTarefaElemento(tarefa) {
     divPrioridade.classList.add('div-prioridade')
     divStatus.classList.add('div-status')
 
+    if (tarefa.status) {
+        divStatus.classList.add('estadoconcluido')
+        li.classList.add('tarefaconcluida')
+    } else {
+        divStatus.classList.add('estadopendente')
+        li.classList.add('tarefapendente')
+    }
+
     const iconCalendarioUm = document.createElement('i')
-    iconCalendarioUm.classList.add('fa-regular', 'fa-calendar-days')
+    iconCalendarioUm.classList.add('fa-regular', 'fa-calendar-days', 'icon')
 
     const iconCalendarioDois = document.createElement('i')
-    iconCalendarioDois.classList.add('fa-regular', 'fa-calendar-check')
+    iconCalendarioDois.classList.add('fa-regular', 'fa-calendar-check', 'concluido')
 
     spanPropriedadeDtCriacao.textContent = ` Criada em: `
     spanPropriedadeDtConclusao.textContent = ` Concluída em: `
@@ -262,6 +290,8 @@ function criarTarefaElemento(tarefa) {
     selectPrioridade.appendChild(prioridadeMedia)
     selectPrioridade.appendChild(prioridadeAlta)
 
+    selectPrioridade.classList.add(tarefa.prioridade)
+
     h3Titulo.textContent = tarefa.titulo
     pDescricao.textContent = tarefa.descricao
     selectPrioridade.value = tarefa.prioridade
@@ -275,10 +305,11 @@ function criarTarefaElemento(tarefa) {
     spanDtCriacao.textContent = formatarData(tarefa.dtCriacao).replace(',', ' às ')
 
     const iconEditTitulo = document.createElement('i')
-    iconEditTitulo.classList.add('fa-regular', 'fa-pen-to-square')
+    iconEditTitulo.classList.add('fa-regular', 'fa-pen-to-square', 'icon')
     
     const btEditarTitulo = document.createElement('button')
     btEditarTitulo.textContent = 'Título'
+    btEditarTitulo.appendChild(iconEditTitulo)
     btEditarTitulo.classList.add('editar-propriedade')
 
     const btSalvarTitulo = document.createElement('button')
@@ -323,11 +354,11 @@ function criarTarefaElemento(tarefa) {
     divTitulo.appendChild(divMsgTitulo)
 
     const iconEditDescricao = document.createElement('i')
-    iconEditDescricao.classList.add('fa-regular', 'fa-pen-to-square')
+    iconEditDescricao.classList.add('fa-regular', 'fa-pen-to-square', 'icon')
 
     const btEditarDescricao = document.createElement('button')
-    
     btEditarDescricao.textContent = 'Descrição' 
+    btEditarDescricao.appendChild(iconEditDescricao)
 
     if (tarefa.descricao === '') {
         pDescricao.classList.add('oculto')
@@ -384,11 +415,12 @@ function criarTarefaElemento(tarefa) {
     const divOpcao = document.createElement('div')
 
     const iconLixeira = document.createElement('i')
-    iconLixeira.classList.add('fa-regular', 'fa-trash-can')
+    iconLixeira.classList.add('fa-regular', 'fa-trash-can', 'erro')
 
     const opcExcluir = document.createElement('button')
     opcExcluir.classList.add('opcaoexcluir')
     opcExcluir.textContent = 'Excluir'
+    opcExcluir.appendChild(iconLixeira)
 
     const divElementosEditarTitulo = document.createElement('div')
     const divElementosEditarDescricao = document.createElement('div')
@@ -401,13 +433,10 @@ function criarTarefaElemento(tarefa) {
     divElementosEditarTitulo.dataset.propriedade = 'titulo'
     divElementosEditarDescricao.dataset.propriedade = 'descricao'
 
-    divElementosEditarTitulo.appendChild(iconEditTitulo)
     divElementosEditarTitulo.appendChild(btEditarTitulo)
 
-    divElementosEditarDescricao.appendChild(iconEditDescricao)
     divElementosEditarDescricao.appendChild(btEditarDescricao)
 
-    divElementosExcluir.appendChild(iconLixeira)
     divElementosExcluir.appendChild(opcExcluir)
 
     divOpcao.appendChild(divElementosEditarTitulo)
@@ -443,6 +472,11 @@ function criarTarefaElemento(tarefa) {
     checkbox.type = 'checkbox'
     checkbox.classList.add('checkbox')
     checkbox.checked = tarefa.status
+    
+    if (checkbox.checked) {
+        checkbox.classList.add('marcado')
+    }
+
     const msgErroApi = document.createElement('p')
     msgErroApi.classList.add('msgerro-api')
     msgErroApi.classList.add('oculto', 'erro')
@@ -455,7 +489,7 @@ function criarTarefaElemento(tarefa) {
     divMsgErroApi.classList.add('divmsgerroapi')
     iconTresPontos.classList.add('fa-solid', 'fa-ellipsis-vertical', 'botaoopcoes')
 
-    divOpcao.classList.add('divopcao', 'oculto')
+    divOpcao.classList.add('divopcao')
 
     const areaMenu = document.createElement('div')
     areaMenu.classList.add('areamenu')
@@ -503,4 +537,4 @@ function editarTarefa(div) {
     return input
 }
 
-export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, alterarEstadoBotao, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa}
+export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa, atualizarAparenciaFiltros}

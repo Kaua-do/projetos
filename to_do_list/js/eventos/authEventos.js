@@ -1,7 +1,7 @@
-import { domAuth, ocultarElemento, desocultarElemento, adicionarAnimacaoErro, removerAnimacaoErro} from "../dom/authDom.js";
+import { domAuth} from "../dom/authDom.js";
 import { cadastrarUsuarioService, entrarUsuarioService } from "../servicos/authService.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
-import { mostrarMensagemErro, apagarMensagemErro } from "../dom/domUtils.js";
+import { mostrarMensagemErro, apagarMensagemErro, ocultarElemento, desocultarElemento, adicionarAnimacaoErro, removerAnimacaoErro, alterarEstadoBotao } from "../dom/domUtils.js";
 import { validarSenha, validarNome, validarCampoEmailLogin, validarCampoSenhaLogin } from "../validacao/validacao.js";
 
 document.addEventListener('click', (evento) => {
@@ -28,6 +28,7 @@ document.addEventListener('click', (evento) => {
     if (elemento.classList.contains('login')) {
         ocultarElemento(domAuth.telaCadastro)
         desocultarElemento(domAuth.telaLogin)
+        ocultarElemento(domAuth.mensagemSucessoCadastro)
         return
     }
 
@@ -76,6 +77,7 @@ document.addEventListener('input', (evento) => {
 })
 
 domAuth.btCadastrar.addEventListener('click', async () => {
+    ocultarElemento(domAuth.mensagemSucessoCadastro)
     const nome = domAuth.nomePerfil.value
 
     const mensagemErroNome = validarNome(nome)
@@ -120,6 +122,8 @@ domAuth.btCadastrar.addEventListener('click', async () => {
         return
     }
 
+    alterarEstadoBotao(domAuth.btCadastrar, true, 'Cadastrar')
+
     try {
         await cadastrarUsuarioService(email, senha, nome)
 
@@ -131,8 +135,18 @@ domAuth.btCadastrar.addEventListener('click', async () => {
         apagarMensagemErro(domAuth.mensagemErroCadastro)
     } catch (erro) {
         mostrarMensagemErro(domAuth.mensagemErroCadastro, tratarErro(erro))
-    } 
+    } finally {
+        alterarEstadoBotao(domAuth.btCadastrar, false, 'Cadastrar')
+    }
     
+})
+
+domAuth.emailLogin.addEventListener('input', () => {
+    apagarMensagemErro(domAuth.mensagemErroLogin)
+})
+
+domAuth.senhaLogin.addEventListener('input', () => {
+    apagarMensagemErro(domAuth.mensagemErroLogin)
 })
 
 domAuth.btEntrar.addEventListener('click', async () => {
@@ -157,7 +171,13 @@ domAuth.btEntrar.addEventListener('click', async () => {
         return
     }
 
-    domAuth.btEntrar.textContent = 'Entrando...'
+    const divBotao = domAuth.btEntrar.closest('.botaoentrar')
+    const divIcon = divBotao.querySelector('.iconcarregamento')
+
+    desocultarElemento(divIcon)
+    divIcon.classList.add('carregando')
+
+    alterarEstadoBotao(domAuth.btEntrar, true, 'Entrando...')
 
     try {
         await entrarUsuarioService(email, senha)
@@ -166,6 +186,8 @@ domAuth.btEntrar.addEventListener('click', async () => {
     } catch (erro) {
         mostrarMensagemErro(domAuth.mensagemErroLogin, tratarErro(erro))
     } finally {
-        domAuth.btEntrar.textContent = 'Entrar'
+        ocultarElemento(divIcon)
+        divIcon.classList.remove('carregando')
+        alterarEstadoBotao(domAuth.btEntrar, false, 'Entrar')
     }
 })

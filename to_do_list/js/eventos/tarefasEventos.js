@@ -1,10 +1,10 @@
-import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, alterarEstadoBotao, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa} from "../dom/tarefasDom.js";
+import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa, atualizarAparenciaFiltros} from "../dom/tarefasDom.js";
 import { perfilDom, mostrarPerfil } from "../dom/perfilDom.js";
 import { carregarTarefas, adicionarTarefa, salvarTarefa, excluirTarefa, atualizarPrioridade, concluirTarefa } from "../servicos/tarefasService.js";
 import { sairUsuarioService, verificarAcessoPagina } from "../servicos/authService.js";
 import { validarTexto, validarTitulo } from "../validacao/validacao.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
-import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon} from "../dom/domUtils.js";
+import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon, alterarEstadoBotao, adicionarAnimacaoErro, removerAnimacaoErro} from "../dom/domUtils.js";
 import { tarefas, obterTarefa} from "../estado/tarefasState.js";
 import { filtrarTarefas } from "../utils/ordenacao.js";
 import { inicializarUsuario } from "../servicos/perfilService.js";
@@ -15,6 +15,8 @@ let tarefaPendenteExclusao = {
     id: null,
     msgErro: null
 }
+
+let idTarefaRecemCriada = null
 
 async function iniciar() {
     try {
@@ -27,6 +29,8 @@ async function iniciar() {
         const usuario = await inicializarUsuario(session)
 
         mostrarPerfil(usuario.nome)
+
+        atualizarAparenciaFiltros()
 
         mostrarEstadoTarefa('Carregando tarefas...')
 
@@ -54,7 +58,7 @@ function prepararTarefasParaRenderizar() {
         return
     }
 
-    renderizarTarefas(tarefasFiltradasEordenadas)
+    renderizarTarefas(tarefasFiltradasEordenadas, idTarefaRecemCriada)
 }
 
 tarefasDom.btAdicionar.addEventListener('click', tentarAdicionarTarefa)
@@ -75,11 +79,13 @@ tarefasDom.descricao.addEventListener('keydown', (evento) => {
 
 tarefasDom.titulo.addEventListener('input', () => {
     atualizarContadorCriacao('titulo')
+    removerAnimacaoErro(tarefasDom.titulo)
     apagarMensagemErro(tarefasDom.mensagemErroTitulo)
 })
 
 tarefasDom.descricao.addEventListener('input', () => {
     atualizarContadorCriacao('descricao')
+    removerAnimacaoErro(tarefasDom.descricao)
     apagarMensagemErro(tarefasDom.mensagemErroDescricao)
 })
 
@@ -91,11 +97,13 @@ async function tentarAdicionarTarefa() {
     const erroTexto = validarTexto(descricao)
 
     if (erroTitulo) {
+        adicionarAnimacaoErro(tarefasDom.titulo)
         mostrarMensagemErro(tarefasDom.mensagemErroTitulo, erroTitulo)
         return
     }
 
     if (erroTexto) {
+        adicionarAnimacaoErro(tarefasDom.descricao)
         mostrarMensagemErro(tarefasDom.mensagemErroDescricao, erroTexto)
         return
     }
@@ -103,10 +111,14 @@ async function tentarAdicionarTarefa() {
     alterarEstadoBotao(tarefasDom.btAdicionar, true, 'Adicionando...')
 
     try {
-        await adicionarTarefa(titulo, descricao)
+        const novaTarefa = await adicionarTarefa(titulo, descricao)
 
+        idTarefaRecemCriada = novaTarefa.id
+        
         prepararTarefasParaRenderizar()
-
+        
+        idTarefaRecemCriada = null
+        
         limparValueElemento(tarefasDom.titulo)
         limparValueElemento(tarefasDom.descricao)
         zerarContadoresCriacao()
@@ -132,6 +144,7 @@ perfilDom.btSair.addEventListener('click', async () => {
 
 tarefasDom.btResetar.addEventListener('click', () => {
     resetarFiltros()
+    atualizarAparenciaFiltros()
     prepararTarefasParaRenderizar()
 })
 
@@ -145,15 +158,17 @@ tarefasDom.containerDeFiltros.addEventListener('change', (evento) => {
         atualizarOpcoesOrdem()
     }
 
+    atualizarAparenciaFiltros()
+
     prepararTarefasParaRenderizar()
 }) 
 
 tarefasDom.btMostrarFiltros.addEventListener('click', (evento) => {
-    const botao = evento.target
+    const botao = evento.target.closest('#mostrarfiltros')
     const divFiltros = botao.closest('#filtros')
     const divReset = divFiltros.querySelector('#divreset')
     const i = botao.querySelector('i')
-
+    
     if (!i) {
         return
     }
@@ -170,8 +185,9 @@ tarefasDom.btMostrarFiltros.addEventListener('click', (evento) => {
         botao.prepend(icon)
     }
 
-    divReset.classList.toggle('oculto')
-    tarefasDom.containerDeFiltros.classList.toggle('oculto')
+    divReset.classList.toggle('aberto')
+    tarefasDom.containerDeFiltros.classList.toggle('aberto')
+    divFiltros.classList.toggle('aberto')
 })
 
 tarefasDom.lista.addEventListener('click', async (evento) => {
@@ -201,15 +217,9 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
     if (elemento.classList.contains('botaoopcoes')) {
         const divMenu = elemento.closest('.div-checkbox')
         const menu = divMenu.querySelector('.divopcao')
+
+        menu.classList.toggle('aberto')
         
-        if (menu.classList.contains('oculto')) {
-            desocultarElemento(menu)
-
-            return
-        }
-
-        ocultarElemento(menu)
-
         return
     }
 
@@ -248,6 +258,7 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
 
             input.addEventListener('input', () => {
                 atualizarContadorTarefa(input.value.length, contador, propriedade)
+                removerAnimacaoErro(input)
             })
 
             const divIntermediaria = divConteudo.querySelector('.divintermediaria')
@@ -282,14 +293,12 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
             return
         }
     }
-})
 
-document.addEventListener('click', (evento) => {
-    const areaMenu = document.querySelector('.areamenu')
-
+    const areaMenu = li.querySelector('.areamenu')
+    
     if (!areaMenu.contains(evento.target)) {
         const divOpcao = areaMenu.querySelector('.divopcao')
-
+        console.log(divOpcao)
         ocultarElemento(divOpcao)
     }
 })
@@ -306,7 +315,7 @@ tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
         return
     }
 
-    if (elemento.classList.contains('confirmar')) {
+    if (elemento.classList.contains('excluir')) {
         alterarEstadoBotao(elemento, true, 'Excluindo...')
 
         try {
@@ -339,8 +348,8 @@ async function tentarSalvarTarefa(id, divConteudo, divElementos) {
 
         if (erroTitulo) {
             input.focus()
+            adicionarAnimacaoErro(input)
             mostrarMensagemErro(msgErro, erroTitulo)
-            console.log(msgErro, erroTitulo)
             return
         }
     } else {
@@ -348,6 +357,7 @@ async function tentarSalvarTarefa(id, divConteudo, divElementos) {
 
         if (erroTexto) {
             input.focus()
+            adicionarAnimacaoErro(input)
             mostrarMensagemErro(msgErro, erroTexto)
             return
         }
