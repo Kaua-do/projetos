@@ -5,7 +5,7 @@ import { sairUsuarioService, verificarAcessoPagina } from "../servicos/authServi
 import { validarTexto, validarTitulo } from "../validacao/validacao.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
 import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon, alterarEstadoBotao, adicionarAnimacaoErro, removerAnimacaoErro} from "../dom/domUtils.js";
-import { tarefas, obterTarefa} from "../estado/tarefasState.js";
+import { tarefas, obterTarefa, alternarModoSelecao, adicionarIdTarefaSelecionada, zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds} from "../estado/tarefasState.js";
 import { filtrarTarefas } from "../utils/ordenacao.js";
 import { inicializarUsuario } from "../servicos/perfilService.js";
 
@@ -13,10 +13,13 @@ iniciar()
 
 let tarefaPendenteExclusao = {
     id: null,
-    msgErro: null
+    msgErro: null,
+    liDom: null
 }
 
 let idTarefaRecemCriada = null
+
+let idsTarefasFiltradas = []
 
 async function iniciar() {
     try {
@@ -61,9 +64,240 @@ function prepararTarefasParaRenderizar() {
     renderizarTarefas(tarefasFiltradasEordenadas, idTarefaRecemCriada)
 }
 
-tarefasDom.btAdicionar.addEventListener('click', tentarAdicionarTarefa)
+function guardarIdsTarefasFiltradas(tarefasFiltradas) {
+    for (const tarefa of tarefasFiltradas) {
+        idsTarefasFiltradas.push(tarefa.id)
+    }
+}
+
+function atualizarCarregamentoApagarMultiplo(atual, ids) {
+    const modal = tarefasDom.modalConfirmacaoMulti
+    const carregamento = modal.querySelector('#carregamento')
+    const SpanPorcentagem = carregamento.querySelector('.porcentagem')
+    const barraCarregamento = carregamento.querySelector('.divbarracarregamento')
+    const total = ids.length
+    const porcentagem = ((atual / total) * 100).toFixed(0) + '%'
+    SpanPorcentagem.textContent = porcentagem
+    console.log(SpanPorcentagem)
+    const carregado = document.createElement('div')
+    carregado.classList.add('carregado')
+    carregado.style.backgroundColor = 'rgba(2, 179, 2, 0.87)'
+    carregado.style.height = '100%'
+    carregado.style.width = porcentagem
+    carregado.style.borderRadius = '6px'
+
+    barraCarregamento.innerHTML = ''
+    barraCarregamento.appendChild(carregado)
+    
+}
+
+function verificarModoSelecao(elemento) {
+    const divSelecionar = elemento.closest('.divselecionartarefas')
+
+    if (elemento.classList.contains('excluirselecionadas')) {
+        const ids = [...tarefasSelecionadasIds()]
+
+        if (ids.length === 0) {
+            return
+        }
+
+        const modal = tarefasDom.modalConfirmacaoMulti
+        modal.dataset.origem = 'selecao'
+
+        const tituloAviso = modal.querySelector('.tituloaviso')
+        tituloAviso.innerHTML = ''
+        const icon = document.createElement('i')
+        icon.classList.add('fa-solid', 'fa-triangle-exclamation')
+        tituloAviso.textContent = `Excluir ${ids.length} tarefas?`
+        tituloAviso.appendChild(icon)
+
+        ocultarElemento(divSelecionar)
+
+        desocultarElemento(tarefasDom.modalConfirmacaoMulti)
+    }
+
+    if (elemento.classList.contains('cancelarselecao')) {
+        cancelarSelecao(elemento)
+    }
+    
+    if (elemento.classList.contains("selecionartarefas")) {
+        alternarModoSelecao(true)
+
+        const btCancelarSelecao = document.createElement('button')
+        btCancelarSelecao.textContent = 'Cancelar'
+        btCancelarSelecao.classList.add('cancelarselecao')
+
+        const btExcluirSelecionadas = document.createElement('button')
+        btExcluirSelecionadas.textContent = 'Excluir'
+        btExcluirSelecionadas.classList.add('excluirselecionadas')
+
+        const divSelecionar = elemento.closest('.divselecionartarefas')
+        const divIntermediaria = divSelecionar.querySelector('.intermediaria')
+
+        ocultarElemento(elemento)
+        divIntermediaria.appendChild(btCancelarSelecao)
+        divIntermediaria.appendChild(btExcluirSelecionadas)
+
+        divSelecionar.appendChild(divIntermediaria)
+    }
+
+    if (elemento.closest('li')) {
+        if (estadoModoSelecao()) {
+            const li = elemento.closest('li')
+            
+            if (li.classList.contains('tarefamarcada')) {
+                li.classList.remove('tarefamarcada')
+            } else {
+                li.classList.add('tarefamarcada')
+            }
+
+            adicionarIdTarefaSelecionada(li.dataset.id)
+        }
+    }
+    
+    return estadoModoSelecao()
+}
+
+function cancelarSelecao(elemento) {
+    const divSelecionar = elemento.closest('.divselecionartarefas')
+
+    alternarModoSelecao(false)
+    zerarIdsSelecao()
+    prepararTarefasParaRenderizar()
+    
+    const btSelecao = divSelecionar.querySelector('.selecionartarefas')
+    const btExcluirSelecionadas = divSelecionar.querySelector('.excluirselecionadas')
+
+    desocultarElemento(btSelecao)
+    elemento.remove()
+    btExcluirSelecionadas.remove()
+
+    ocultarElemento(divSelecionar)
+
+    //CANCELAR MODO DE SELEÇÃO, OCULTAR O MENU, ZERAR MARCAÇÃO E IDS GUARDADOS
+    //PELO CANCELAR DA MODAL
+}
+
+tarefasDom.btApagarFiltradas.addEventListener('click', (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+
+    if (evento.target.classList.contains('selecionartarefas')) {
+        return
+    }
+
+    const tarefasFiltradas = filtrarTarefas(tarefas, pegarFiltros())
+    
+    if (tarefasFiltradas.length === 0) {
+        return
+    }
+
+    guardarIdsTarefasFiltradas(tarefasFiltradas)
+
+    const tarefasFiltradasCopia = [...idsTarefasFiltradas]
+
+    const modal = tarefasDom.modalConfirmacaoMulti
+    modal.dataset.origem = 'filtro'
+
+    const tituloAviso = modal.querySelector('.tituloaviso')
+    tituloAviso.innerHTML = ''
+    const icon = document.createElement('i')
+    icon.classList.add('fa-solid', 'fa-triangle-exclamation')
+    tituloAviso.textContent = `Excluir ${tarefasFiltradasCopia.length} tarefas?`
+    tituloAviso.appendChild(icon)
+
+    desocultarElemento(tarefasDom.modalConfirmacaoMulti)
+})
+
+tarefasDom.modalConfirmacaoMulti.addEventListener('click', async (evento) => {
+    if (evento.target.classList.contains('excluir')) {
+        if (tarefasDom.modalConfirmacaoMulti.dataset.origem === 'filtro') {
+            const tarefasFiltradasCopia = [...idsTarefasFiltradas]
+            apagarMultiplasTarefas(evento.target, tarefasFiltradasCopia)
+            idsTarefasFiltradas = []
+
+            return
+        }
+
+        if (tarefasDom.modalConfirmacaoMulti.dataset.origem === 'selecao') {
+            const divSelecionar = evento.target.closest('.divselecionartarefas')
+            const ids = [...tarefasSelecionadasIds()]
+            apagarMultiplasTarefas(evento.target, ids)
+            ocultarElemento(divSelecionar)
+
+            return
+        } 
+    }
+
+    if (evento.target.classList.contains('cancelar')) {
+        if (tarefasDom.modalConfirmacaoMulti.dataset.origem === 'filtro') {
+            ocultarElemento(tarefasDom.modalConfirmacaoMulti)
+            idsTarefasFiltradas = []
+
+            return
+        }  
+    }
+
+    if (evento.target.classList.contains('cancelar')) {
+        if (tarefasDom.modalConfirmacaoMulti.dataset.origem === 'selecao') {
+            ocultarElemento(tarefasDom.modalConfirmacaoMulti)
+            const elemento = document.querySelector('.divselecionartarefas')
+            cancelarSelecao(elemento)
+
+            return
+        }
+    }
+})  
+
+async function apagarMultiplasTarefas(elemento,ids) {
+    const modal = tarefasDom.modalConfirmacaoMulti
+    const carregamento = modal.querySelector('#carregamento')
+
+    const barraCarregamento = carregamento.querySelector('.divbarracarregamento')
+    const porcentagem = carregamento.querySelector('.porcentagem')
+    
+    desocultarElemento(carregamento)
+    desocultarElemento(tarefasDom.modalConfirmacaoMulti)
+    alterarEstadoBotao(elemento, true, 'Excluindo...')
+
+    let cont = 0
+
+    for (const id of ids) {
+        
+        try {
+            await excluirTarefa(id)
+            cont++
+            atualizarCarregamentoApagarMultiplo(cont, ids)
+        } catch (erro) {
+            console.log(erro)
+        }
+    }
+
+    barraCarregamento.innerHTML = ''
+    porcentagem.innerHTML = '0%'
+
+    prepararTarefasParaRenderizar()
+    cont = 0
+    
+    ocultarElemento(tarefasDom.modalConfirmacaoMulti)
+    alterarEstadoBotao(elemento, false, 'Excluir')
+    ocultarElemento(carregamento)
+}
+
+tarefasDom.btAdicionar.addEventListener('click', (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+    
+    tentarAdicionarTarefa()
+})
 
 tarefasDom.titulo.addEventListener('keydown', (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+
     if (evento.key === 'Enter') {
         tentarAdicionarTarefa()
         return
@@ -71,6 +305,10 @@ tarefasDom.titulo.addEventListener('keydown', (evento) => {
 })
 
 tarefasDom.descricao.addEventListener('keydown', (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+
     if (evento.key === 'Enter') {
         tentarAdicionarTarefa()
         return
@@ -99,12 +337,14 @@ async function tentarAdicionarTarefa() {
     if (erroTitulo) {
         adicionarAnimacaoErro(tarefasDom.titulo)
         mostrarMensagemErro(tarefasDom.mensagemErroTitulo, erroTitulo)
+        tarefasDom.titulo.focus()
         return
     }
 
     if (erroTexto) {
         adicionarAnimacaoErro(tarefasDom.descricao)
         mostrarMensagemErro(tarefasDom.mensagemErroDescricao, erroTexto)
+        tarefasDom.descricao.focus()
         return
     }
 
@@ -129,7 +369,11 @@ async function tentarAdicionarTarefa() {
     }
 }
 
-perfilDom.btSair.addEventListener('click', async () => {
+perfilDom.btSair.addEventListener('click', async (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+
     perfilDom.btSair.disabled = true
 
     try {
@@ -142,13 +386,20 @@ perfilDom.btSair.addEventListener('click', async () => {
     
 })
 
-tarefasDom.btResetar.addEventListener('click', () => {
+tarefasDom.btResetar.addEventListener('click', (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+
     resetarFiltros()
     atualizarAparenciaFiltros()
     prepararTarefasParaRenderizar()
 })
 
 tarefasDom.containerDeFiltros.addEventListener('change', (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
     
     if (evento.target.tagName !== 'SELECT') {
         return
@@ -164,6 +415,10 @@ tarefasDom.containerDeFiltros.addEventListener('change', (evento) => {
 }) 
 
 tarefasDom.btMostrarFiltros.addEventListener('click', (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+
     const botao = evento.target.closest('#mostrarfiltros')
     const divFiltros = botao.closest('#filtros')
     const divReset = divFiltros.querySelector('#divreset')
@@ -190,7 +445,17 @@ tarefasDom.btMostrarFiltros.addEventListener('click', (evento) => {
     divFiltros.classList.toggle('aberto')
 })
 
-tarefasDom.lista.addEventListener('click', async (evento) => {
+tarefasDom.divLista.addEventListener('click', async (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+
+    if (evento.target.classList.contains('menuselecao')) {
+        const elementosLista = evento.target.closest('.elementoslista')
+        const divSelecionar = elementosLista.querySelector('.divselecionartarefas')
+        divSelecionar.classList.toggle('oculto')
+    }
+
     const elemento = evento.target
     const li = evento.target.closest('li')
 
@@ -285,6 +550,7 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
 
             tarefaPendenteExclusao.id = id
             tarefaPendenteExclusao.msgErro = msgErro
+            tarefaPendenteExclusao.liDom = li
 
             ocultarElemento(divOpcao)
             desocultarElemento(tarefasDom.modalConfirmacao)
@@ -298,12 +564,13 @@ tarefasDom.lista.addEventListener('click', async (evento) => {
     
     if (!areaMenu.contains(evento.target)) {
         const divOpcao = areaMenu.querySelector('.divopcao')
-        console.log(divOpcao)
-        ocultarElemento(divOpcao)
+        
+        divOpcao.classList.remove('aberto')
     }
 })
 
 tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
+
     const elemento = evento.target
     
     if (elemento.classList.contains('cancelar')) {
@@ -312,11 +579,14 @@ tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
         ocultarElemento(tarefasDom.modalConfirmacao)
         tarefaPendenteExclusao.id = null
         tarefaPendenteExclusao.msgErro = null
+        tarefaPendenteExclusao.liDom = null
         return
     }
 
     if (elemento.classList.contains('excluir')) {
         alterarEstadoBotao(elemento, true, 'Excluindo...')
+
+        tarefaPendenteExclusao.liDom.classList.add('removendotarefa')
 
         try {
             await excluirTarefa(tarefaPendenteExclusao.id)
@@ -328,6 +598,7 @@ tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
             ocultarElemento(tarefasDom.modalConfirmacao)
             tarefaPendenteExclusao.id = null
             tarefaPendenteExclusao.msgErro = null
+            tarefaPendenteExclusao.liDom = null
             alterarEstadoBotao(elemento, false, 'Excluir')
         }
         
@@ -398,6 +669,10 @@ async function tentarSalvarTarefa(id, divConteudo, divElementos) {
 }
 
 tarefasDom.lista.addEventListener('change', async (evento) => {
+    if (verificarModoSelecao(evento.target)) {
+        return
+    }
+
     const elemento = evento.target
     const li = evento.target.closest('li')
 

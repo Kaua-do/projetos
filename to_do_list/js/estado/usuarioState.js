@@ -8,4 +8,6 @@ function obterUsuarioAtual() {
     return usuarioAtual
 }
 
+
+
 export {definirUsuarioAtual, obterUsuarioAtual}

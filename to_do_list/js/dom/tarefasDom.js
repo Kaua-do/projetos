@@ -5,6 +5,7 @@ const tarefasDom = {
     titulo: document.querySelector('#titulo'),
     descricao: document.querySelector('#descricao'),
     btAdicionar: document.querySelector('#adicionar'),
+    divLista: document.querySelector('#divlista'),
     lista: document.querySelector('#lista'),
     mensagemErroTitulo: document.querySelector('#errotitulo'),
     mensagemErroDescricao: document.querySelector('#errodescricao'),
@@ -13,6 +14,7 @@ const tarefasDom = {
     containerDeFiltros: document.querySelector('#containerfiltros'),
     btMostrarFiltros: document.querySelector('#mostrarfiltros'),
     btResetar: document.querySelector('#resetarfiltros'),
+    btApagarFiltradas: document.querySelector('#apagarfiltradas'),
     filtroStatus: document.querySelector('#selectstatusfiltros'),
     filtroPrioridade: document.querySelector('#selectprioridadefiltros'),
     filtroDtCriacao: document.querySelector('#selectcriacaofiltros'),
@@ -22,7 +24,8 @@ const tarefasDom = {
     ordemOpcUm:document.querySelector('.opcum'),
     ordemOpcDois: document.querySelector('.opcdois'),
     mostradorEstadoTarefas: document.querySelector('#mostrarestadotarefa'),
-    modalConfirmacao: document.querySelector('#modalconfirmacao')
+    modalConfirmacao: document.querySelector('#modalconfirmacao'),
+    modalConfirmacaoMulti: document.querySelector('#modalconfirmacaomultitarefas')
 }
 
 function aplicarAparenciaErro(elemento) {
@@ -108,7 +111,6 @@ function adicionarNaLista(tarefa, idTarefaRecemCriada) {
     const li = criarTarefaElemento(tarefa)
     
     if (tarefa.id === idTarefaRecemCriada) {
-        console.log('entrou')
         li.classList.add('novatarefa')
     }
 

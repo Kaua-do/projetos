@@ -63,6 +63,23 @@
             animation: tremer 0.25s ease-in-out;
         }
 
+        .removendotarefa {
+            opacity: 0;
+            transform: translateX(12px);
+            max-height: 0;
+            margin-block: 0;
+            padding-block: 0;
+            border-width: 0;
+            overflow: hidden;
+            transition:
+                opacity 300ms ease,
+                transform 300ms ease,
+                max-height 300ms ease,
+                margin 300ms ease,
+                padding 300ms ease,
+                border-width 300ms ease;
+        }
+
         * {
             box-sizing: border-box;
         }
@@ -85,13 +102,18 @@
         .erro {
             color: red;
         }
-
+        
         .concluido {
             color: var(--cor-sucesso);
         }
 
         .checkbox.marcado {
             accent-color: var(--cor-sucesso);
+        }
+
+        .tarefamarcada {
+            border-color: red;
+            outline: 2px solid red;
         }
 
         .ativo {
@@ -149,7 +171,7 @@
             font-weight: 600;
         }
 
-        #modalconfirmacao {
+        #modalconfirmacao, #modalconfirmacaomultitarefas {
             position: fixed;
             inset: 0;
             z-index: 1000;
@@ -161,7 +183,7 @@
             align-items: center;
         }
 
-        #modalconfirmacao.oculto, #containerfiltros.oculto, #divreset.oculto {
+        #modalconfirmacao.oculto, #modalconfirmacaomultitarefas.oculto, #containerfiltros.oculto, #divreset.oculto {
             display: none;
         }
 
@@ -183,6 +205,41 @@
 
         .conteudomodal > p {
             color: var(--cor-texto);
+        }
+
+        .conteudomodal > .tituloaviso {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: start;
+            gap: 10px;
+        }
+
+        .conteudomodal > #carregamento {
+            width: 100%;
+            height: 20px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+
+        .divbarracarregamento {
+            width: 100%;
+            height: 20px;
+            border: 1px solid black;
+            border-radius: 6px;
+        }
+
+        #apagarfiltradas {
+            border: 1px solid var(--cor-borda);
+            background-color: #DC2626;
+            color: white;
+            font-weight: 600;
+            border-radius: 6px;
+            padding: 5px;
+            margin-right: 8px;
+        }
+
+        #apagarfiltradas:hover {
+            background-color: #B91C1C;
         }
 
         #informacaotarefa {
@@ -418,6 +475,10 @@
             padding: 3px;
         }
 
+        #adicionar:hover, .salvar:hover, #mostrarfiltros:hover, #resetarfiltros:hover {
+            background-color: var(--cor-primaria-hover);
+        }
+
         #filtros {
             border: 1px solid var(--cor-borda);
             border-radius: 6px;
@@ -540,8 +601,19 @@
             border: 1px solid var(--cor-borda);
         }
 
-        .botaofiltro:active, #adicionar:active, #resetarfiltros:active, .checkbox {
+        .botaofiltro:active, #apagarfiltradas:active, #adicionar:active, #resetarfiltros:active, .checkbox {
             transform: scale(0.99);
+        }
+
+        #carregamento {
+            position: relative;
+        }
+
+        .divporcentagem {
+            position: absolute;
+            top: 2px;
+            right: 157px;
+            z-index: 1;
         }
 
         .div-checkbox {
@@ -658,6 +730,56 @@
             list-style: none;
             padding: 0px;
             margin-top: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .elementoslista {
+            position: relative;
+            display: grid;
+            grid-template-columns: 22px 1fr 30px;
+        }
+
+        .elementoslista .menuselecao{
+            text-align: center;
+        }
+
+        .divselecionartarefas {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            width: 130px;
+            z-index: 1;
+        }
+
+        .divselecionartarefas > .intermediaria {
+            display: flex;
+            flex-direction: column;
+            background-color: white;
+            border: 1px solid var(--cor-borda);
+            border-radius: 6px;
+        }
+
+        .divselecionartarefas > .intermediaria.oculto {
+            display: none;
+        }
+
+        .selecionartarefas, .cancelarselecao, .excluirselecionadas {
+            color: var(--cor-texto);
+            background-color: white;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 5px;
+        }
+
+        .divselecionartarefas .cancelarselecao:hover {
+            transform: translateX(2px);
+            background-color: #244cc511;
+        }
+
+        .divselecionartarefas .excluirselecionadas:hover {
+            transform: translateX(2px);
+            background-color: rgba(255, 0, 0, 0.048);
         }
 
         #lista li {
@@ -792,6 +914,27 @@
 </head>
 <body>
     <main>
+        <div id="modalconfirmacaomultitarefas" class="oculto">
+            <div class="conteudomodal">
+                <h2 class="tituloaviso"><i class="fa-solid fa-triangle-exclamation"></i></h2>
+
+                <p id="mensagemconfirmacao">Tem que certeza que deseja excluir essas tarefas?</p>
+
+                <div id="informacaotarefa">
+                    <p class="aviso">Está ação não pode ser desfeita.</p>
+                </div>
+
+                <div id="carregamento" class="oculto">
+                    <div class="divporcentagem"><span class="porcentagem">0%</span></div>
+                    <div class="divbarracarregamento"></div>
+                </div>
+
+                <div class="botoesmodal">
+                    <button class="cancelar">Cancelar</button>
+                    <button class="excluir"><i class="fa-regular fa-trash-can"></i> Excluir</button>
+                </div>
+            </div>
+        </div>
         <div id="modalconfirmacao" class="oculto">
             <div class="conteudomodal">
                 <h2><i class="fa-solid fa-triangle-exclamation"></i>  Excluir tarefa?</h2>
@@ -917,12 +1060,24 @@
                         </div>
                     </div>
                 </div>
-                <div id="divreset"><button id="resetarfiltros"><i class="fa-solid fa-arrows-rotate"></i> Resetar</button></div>
+                <div id="divreset">
+                    <button id="apagarfiltradas">
+                        <i class="fa-solid fa-dumpster"></i> Apagar filtradas</button>
+                    <button id="resetarfiltros">
+                        <i class="fa-solid fa-arrows-rotate"></i> Resetar
+                    </button>
+                </div>
             </div>
         <div id="mostrarestadotarefa"></div>
         <div id="divlista">
-            <i class="fa-solid fa-list-check icon"></i>
-            <span class="nomearea">Lista de tarefas</span>
+            <div class="elementoslista">
+                <i class="fa-solid fa-list-check icon"></i>
+                <span class="nomearea">Lista de tarefas</span>
+                <i class="fa-solid fa-ellipsis-vertical menuselecao"></i>
+                <div class="divselecionartarefas">
+                    <div class="intermediaria"><button class="selecionartarefas">Selecionar tarefas</button></div>
+                </div>
+            </div>
             <ul id="lista"></ul>
         </div>
     </main>

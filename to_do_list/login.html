@@ -47,6 +47,71 @@
             }
         }
 
+        .saindocadastro {
+            animation: sairFormularioCadastro 300ms ease forwards;
+        }
+
+        @keyframes sairFormularioCadastro {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+        }
+
+        .saindologin {
+            animation: sairFormularioLogin 300ms ease forwards;
+        }
+
+        @keyframes sairFormularioLogin {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
+
+            to {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+        }
+
+        .entrandocadastro {
+            animation: entrarFormularioCadastro 300ms ease forwards;
+        }
+
+        @keyframes entrarFormularioCadastro {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        
+        .entrandologin {
+            animation: entrarFormularioLogin 300ms ease forwards;
+        }
+
+        @keyframes entrarFormularioLogin {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
         .carregando {
             animation: girar 0.8s linear infinite;
         }

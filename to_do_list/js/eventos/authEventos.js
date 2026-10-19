@@ -26,18 +26,73 @@ document.addEventListener('click', (evento) => {
     }
 
     if (elemento.classList.contains('login')) {
-        ocultarElemento(domAuth.telaCadastro)
-        desocultarElemento(domAuth.telaLogin)
-        ocultarElemento(domAuth.mensagemSucessoCadastro)
+
+        alternarFormulario(domAuth.telaCadastro, domAuth.telaLogin, 'login')
+
         return
     }
 
     if (elemento.classList.contains('cadastro')) {
-        ocultarElemento(domAuth.telaLogin)
-        desocultarElemento(domAuth.telaCadastro)
+
+        alternarFormulario(domAuth.telaLogin, domAuth.telaCadastro, 'login')
+        
         return
     }
 })
+
+async function alternarFormulario(sai, entra, destinatario) {
+    const classeSaida = destinatario === 'login'
+        ? 'saindocadastro'
+        : 'saindologin'
+
+    const classeEntrada = destinatario === 'login'
+        ? 'entrandologin'
+        : 'entrandocadastro'
+
+    const nomeAnimacaoSaida = destinatario === 'login'
+        ? 'sairFormularioCadastro'
+        : 'sairFormularioLogin'
+
+    const nomeAnimacaoEntrada = destinatario === 'login'
+        ? 'entrarFormularioLogin'
+        : 'entrarFormularioCadastro'
+
+    desocultarElemento(entra)
+
+    sai.classList.remove(
+        'saindocadastro',
+        'saindologin'
+    )
+
+    entra.classList.remove(
+        'entrandologin',
+        'entrandocadastro'
+    )
+
+    sai.classList.add(classeSaida)
+    entra.classList.add(classeEntrada)
+    
+    await aguardarAnimacao(sai, nomeAnimacaoSaida)
+    
+    ocultarElemento(sai)
+    
+    sai.classList.remove(classeSaida)
+    entra.classList.remove(classeEntrada)
+}
+
+function aguardarAnimacao(elemento, nomeAnimacao) {
+    return new Promise(resolve => {
+        function finalizar(evento) {
+            if (evento.target !== elemento) return
+            if (evento.animationName !== nomeAnimacao) return
+
+            elemento.removeEventListener('animationend', finalizar)
+            resolve()
+        }
+
+        elemento.addEventListener('animationend', finalizar)
+    })
+}
 
 document.addEventListener('focusin', (evento) => {
     const elemento = evento.target

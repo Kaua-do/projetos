@@ -1,5 +1,32 @@
 let tarefas = []
 
+let modoSelecaoAtivo = false
+let idsTarefasSelecionadas = new Set()
+
+function alternarModoSelecao(novoEstado) {
+    modoSelecaoAtivo = novoEstado
+}
+
+function adicionarIdTarefaSelecionada(id) {
+    if (idsTarefasSelecionadas.has(id)) {
+        idsTarefasSelecionadas.delete(id)
+    } else {
+        idsTarefasSelecionadas.add(id)
+    }
+}
+
+function zerarIdsSelecao() {
+    idsTarefasSelecionadas.clear()
+}
+
+function estadoModoSelecao() {
+    return modoSelecaoAtivo
+}
+
+function tarefasSelecionadasIds() {
+    return idsTarefasSelecionadas
+}
+
 function definirTarefas(tarefasNovas) {
     tarefas = tarefasNovas
 }
@@ -52,4 +79,4 @@ function obterTarefa(id) {
     return tarefas.find(tarefa => tarefa.id === id)
 }
 
-export {tarefas, definirTarefas, adicionarTarefaEstado, apagarTarefa, atualizarPrioridadeEstado, concluirTarefaEstado, editarTarefaEstado, obterTarefa}
+export {tarefas, definirTarefas, adicionarTarefaEstado, apagarTarefa, atualizarPrioridadeEstado, concluirTarefaEstado, editarTarefaEstado, obterTarefa, adicionarIdTarefaSelecionada, alternarModoSelecao,zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds}
