@@ -1,17 +1,19 @@
 import { criarTarefaApi, deletarTarefaApi, editarTarefaApi, obterTarefasApi} from "../api/tarefasApi.js"
 import { adicionarTarefaEstado, concluirTarefaEstado, definirTarefas, apagarTarefa, editarTarefaEstado, atualizarPrioridadeEstado } from "../estado/tarefasState.js"
 
-function criarTarefa(titulo, descricao) {
+function criarTarefa(titulo, descricao, data) {
     return {
         titulo,
         descricao,
+        data,
         prioridade: 'media',
-        status: false,
+        status: false
     } 
 }
 
-async function adicionarTarefa(titulo, descricao) {
-    const tarefa = criarTarefa(titulo, descricao)
+async function adicionarTarefa(titulo, descricao, data) {
+    const tarefa = criarTarefa(titulo, descricao, data)
+    
     const tarefaCriada = await criarTarefaApi(tarefa)
 
     adicionarTarefaEstado(tarefaCriada)
@@ -32,7 +34,6 @@ async function carregarTarefas() {
 }
 
 async function salvarTarefa(id, property, tarefa) {
-    
     const dados = await editarTarefaApi(id, tarefa)
 
     editarTarefaEstado(id, property, dados[property])

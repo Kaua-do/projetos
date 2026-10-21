@@ -112,8 +112,9 @@
         }
 
         .tarefamarcada {
-            border-color: red;
-            outline: 2px solid red;
+            border-color: #315FEA;
+            outline: 2px solid #315FEA;
+            background-color: #F4F6FB;
         }
 
         .ativo {
@@ -447,7 +448,24 @@
             color: var(--cor-texto);
         }
 
-        #titulo:focus, #descricao:focus {
+        .data {
+            margin-bottom: 10px;
+        }
+
+        .data p {
+            margin: 0px;
+            font-size: 0.7em;
+            color: var(--cor-texto-secundario);
+        }
+
+        #data {
+            background-color: var(--cor-superficie);
+            border: 1px solid var(--cor-borda);
+            border-radius: 6px;
+            color: var(--cor-texto-secundario);
+        }
+
+        #titulo:focus, #descricao:focus, #data:focus {
             outline: 1px solid var(--cor-foco);
             border-color: var(--cor-foco);
         }
@@ -639,8 +657,8 @@
             border: 1px solid transparent;
             border-radius: 6px;
         }
-
-        .areamenu i:active{
+        
+        .areamenu i:active, .elementoslista .menuselecao:active{
             color: var(--cor-foco);
             transform: scale(0.99);
         }
@@ -663,7 +681,7 @@
                 visibility 160ms ease;
         }
 
-        .divopcao.aberto, #divreset.aberto, #containerfiltros.aberto {
+        .divopcao.aberto, #divreset.aberto, #containerfiltros.aberto, .divselecionartarefas.aberto{
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
@@ -675,6 +693,10 @@
             background-color: white;
             border: 1px solid transparent;
             border-radius: 6px;
+        }
+
+        .divelementoseditar.oculto, .divelementosprazo.oculto {
+            display: none;
         }
 
         .divopcao button {
@@ -705,7 +727,7 @@
             background-color: #dc262611;
         }
 
-        .divintermediaria .salvar {
+        .divintermediaria .salvar, .salvardata {
             width: 80px;
             background-color: var(--cor-primaria);
             border: 1px solid var(--cor-borda);
@@ -714,21 +736,20 @@
             font-weight: 600;
         }
 
-        .divintermediaria .salvar:active {
+        .divintermediaria .salvar:active, .salvardata {
             transform: scale(0.99);
         }
         
         #divlista {
             border: 1px solid var(--cor-borda);
             border-radius: 6px;
-            padding: 10px;
             background-color: var(--cor-superficie);
             box-shadow: 0 2px 8px rgb(23 32 51 / 5%);
         }
 
         #lista {
             list-style: none;
-            padding: 0px;
+            padding: 4px 10px 10px 10px;
             margin-top: 5px;
             max-height: 400px;
             overflow-y: auto;
@@ -738,6 +759,7 @@
             position: relative;
             display: grid;
             grid-template-columns: 22px 1fr 30px;
+            padding: 10px;
         }
 
         .elementoslista .menuselecao{
@@ -746,10 +768,19 @@
 
         .divselecionartarefas {
             position: absolute;
-            top: 20px;
-            right: 25px;
+            top: 30px;
+            right: 35px;
             width: 130px;
             z-index: 1;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-5px);
+            pointer-events: none;
+
+            transition:
+                opacity 160ms ease,
+                transform 160ms ease,
+                visibility 160ms ease;
         }
 
         .divselecionartarefas > .intermediaria {
@@ -758,10 +789,6 @@
             background-color: white;
             border: 1px solid var(--cor-borda);
             border-radius: 6px;
-        }
-
-        .divselecionartarefas > .intermediaria.oculto {
-            display: none;
         }
 
         .selecionartarefas, .cancelarselecao, .excluirselecionadas {
@@ -868,6 +895,26 @@
 
         }
 
+        .divdata span {
+            display: flex;
+            justify-content: start;
+            align-items: center;
+            flex-direction: row-reverse;
+            gap: 5px;
+            font-size: 0.75em;
+        }
+
+        .divdata span.oculto {
+            display: none;
+        }
+
+        .divdata .divintermediaria {
+            display: flex;
+            gap: 10px;
+        }
+
+        
+
         #lista li .container .propriedade .input-descricao {
             width: 180px;
             height: 80px;
@@ -968,6 +1015,7 @@
             </div>
         </div>
         <div id="areacriacao">
+            <input type="date">
             <i class="fa-solid fa-circle-plus icon"></i>
             <span class="nomearea">Nova tarefa</span>
             <div class="campo titulo">
@@ -991,6 +1039,10 @@
                         <p id="contadordescricao">0/150</p>
                     </div>
                 </div>
+            </div>
+            <div class="campo data">
+                <p>Prazo (Opicional)</p>
+                <input type="date" id="data">
             </div>
             <button id="adicionar">Adicionar</button>
         </div>

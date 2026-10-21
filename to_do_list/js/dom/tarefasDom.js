@@ -4,6 +4,7 @@ const tarefasDom = {
     main: document.querySelector('main'),
     titulo: document.querySelector('#titulo'),
     descricao: document.querySelector('#descricao'),
+    data: document.querySelector('#data'),
     btAdicionar: document.querySelector('#adicionar'),
     divLista: document.querySelector('#divlista'),
     lista: document.querySelector('#lista'),
@@ -230,12 +231,15 @@ function criarTarefaElemento(tarefa) {
     const div = document.createElement('div')
     const divTitulo = document.createElement('div')
     const divDescricao = document.createElement('div')
+    const divData = document.createElement('div')
     const divPrioridade = document.createElement('div')
     const divStatus = document.createElement('div')
     const divDtCriacao = document.createElement('div')
     const divDtConclusao = document.createElement('div')
     const spanPropriedadeDtCriacao = document.createElement('span')
     const spanPropriedadeDtConclusao = document.createElement('span')
+
+    divData.classList.add('divdata')
 
     divPrioridade.classList.add('div-prioridade')
     divStatus.classList.add('div-status')
@@ -396,8 +400,43 @@ function criarTarefaElemento(tarefa) {
     divDescricao.classList.add('divdescricao', 'propriedade')
     divDescricao.dataset.propriedade = 'descricao'
 
-    div.appendChild(divTitulo)
-    div.appendChild(divDescricao)
+    const iconEditPrazo = document.createElement('i')
+    iconEditPrazo.classList.add('fa-regular', 'fa-pen-to-square', 'icon')
+
+    const btEditarPrazo = document.createElement('button')
+    btEditarPrazo.classList.add('editarprazo', 'editar-propriedade')
+    btEditarPrazo.textContent = 'Prazo'
+    btEditarPrazo.appendChild(iconEditPrazo)
+
+    const iconPrazo = document.createElement('i')
+    iconPrazo.classList.add('fa-regular', 'fa-clock', 'icon')
+
+    const divIntermediariaData = document.createElement('div')
+    divIntermediariaData.classList.add('divintermediaria')
+
+    const spanData = document.createElement('span')
+    if (tarefa.data) {
+        spanData.textContent = `Prazo: ${tarefa.data}`
+        spanData.appendChild(iconPrazo)
+    } else {
+        spanData.classList.add('oculto')
+    }
+
+    spanData.classList.add('conteudo')
+
+    const btSalvarData = document.createElement('button')
+    btSalvarData.classList.add('salvardata', 'oculto')
+    btSalvarData.textContent = 'Salvar'
+
+    const spanMsgErroData = document.createElement('span')
+    spanMsgErroData.classList.add('msgerrodata', 'erro')
+
+    divIntermediariaData.appendChild(spanData)
+    divIntermediariaData.appendChild(btSalvarData)
+
+    divData.appendChild(divIntermediariaData)
+    divData.appendChild(spanMsgErroData)
+
     divPrioridade.appendChild(selectPrioridade)
 
     divStatus.appendChild(spanStatus)
@@ -426,10 +465,12 @@ function criarTarefaElemento(tarefa) {
 
     const divElementosEditarTitulo = document.createElement('div')
     const divElementosEditarDescricao = document.createElement('div')
+    const divElementosEditarPrazo = document.createElement('div')
     const divElementosExcluir = document.createElement('div')
 
     divElementosEditarTitulo.classList.add('divelementoseditar', 'divelementoseditartitulo')
     divElementosEditarDescricao.classList.add('divelementoseditar', 'divelementoseditardescricao')
+    divElementosEditarPrazo.classList.add('divelementosprazo')
     divElementosExcluir.classList.add('divelementosexcluir')
 
     divElementosEditarTitulo.dataset.propriedade = 'titulo'
@@ -439,17 +480,21 @@ function criarTarefaElemento(tarefa) {
 
     divElementosEditarDescricao.appendChild(btEditarDescricao)
 
+    divElementosEditarPrazo.appendChild(btEditarPrazo)
+
     divElementosExcluir.appendChild(opcExcluir)
 
     divOpcao.appendChild(divElementosEditarTitulo)
     divOpcao.appendChild(divElementosEditarDescricao)
+    divOpcao.appendChild(divElementosEditarPrazo)
     divOpcao.appendChild(divElementosExcluir)
 
     const divParteUm = document.createElement('div')
     divParteUm.classList.add('div-parteum')
     divParteUm.appendChild(divTitulo)
     divParteUm.appendChild(divDescricao)
-
+    divParteUm.appendChild(divData)
+    
     const divParteDois = document.createElement('div')
     divParteDois.classList.add('div-partedois')
     divParteDois.appendChild(divPrioridade)
@@ -513,30 +558,45 @@ function criarTarefaElemento(tarefa) {
 }
 
 function editarTarefa(div) {
-    const btSalvar = div.querySelector('.salvar')
-    const conteudo = div.querySelector('.conteudo')
-
-    conteudo.classList.add('oculto')
-
-    btSalvar.classList.remove('oculto')
-
-    if (div.dataset.propriedade === 'titulo') {
+    if (div.classList.contains('divintermediaria')) {
+        const elementoConteudo = div.querySelector('.conteudo')
         const input = document.createElement('input')
         input.classList.add('input-propriedade')
-        input.value = conteudo.textContent
-        input.maxLength = '20'
+        input.type = 'date'
+
+        elementoConteudo.classList.add('oculto')
+        const btSalvar = div.querySelector('.salvardata')
+        
+        btSalvar.classList.remove('oculto')
 
         return input
+    } else {
+        const btSalvar = div.querySelector('.salvar')
+        const conteudo = div.querySelector('.conteudo')
+
+        conteudo.classList.add('oculto')
+
+        btSalvar.classList.remove('oculto')
+
+        if (div.dataset.propriedade === 'titulo') {
+            const input = document.createElement('input')
+            input.classList.add('input-propriedade')
+            input.value = conteudo.textContent
+            input.maxLength = '20'
+
+            return input
+        }
+
+        const input = document.createElement('textarea')
+
+        input.classList.add('input-propriedade', 'input-descricao')
+
+        input.maxLength = '150'
+        input.value = conteudo.textContent
+        
+        return input
     }
-
-    const input = document.createElement('textarea')
-
-    input.classList.add('input-propriedade', 'input-descricao')
-
-    input.maxLength = '150'
-    input.value = conteudo.textContent
-    
-    return input
 }
+
 
 export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa, atualizarAparenciaFiltros}

@@ -111,13 +111,13 @@ function verificarModoSelecao(elemento) {
         tituloAviso.textContent = `Excluir ${ids.length} tarefas?`
         tituloAviso.appendChild(icon)
 
-        ocultarElemento(divSelecionar)
+        divSelecionar.classList.toggle('aberto')
 
         desocultarElemento(tarefasDom.modalConfirmacaoMulti)
     }
 
     if (elemento.classList.contains('cancelarselecao')) {
-        cancelarSelecao(elemento)
+        cancelarSelecao()
     }
     
     if (elemento.classList.contains("selecionartarefas")) {
@@ -158,8 +158,8 @@ function verificarModoSelecao(elemento) {
     return estadoModoSelecao()
 }
 
-function cancelarSelecao(elemento) {
-    const divSelecionar = elemento.closest('.divselecionartarefas')
+function cancelarSelecao() {
+    const divSelecionar = document.querySelector('.divselecionartarefas')
 
     alternarModoSelecao(false)
     zerarIdsSelecao()
@@ -167,15 +167,13 @@ function cancelarSelecao(elemento) {
     
     const btSelecao = divSelecionar.querySelector('.selecionartarefas')
     const btExcluirSelecionadas = divSelecionar.querySelector('.excluirselecionadas')
+    const btCancelarSelecao = divSelecionar.querySelector('.cancelarselecao')
 
     desocultarElemento(btSelecao)
-    elemento.remove()
     btExcluirSelecionadas.remove()
+    btCancelarSelecao.remove()
 
-    ocultarElemento(divSelecionar)
-
-    //CANCELAR MODO DE SELEÇÃO, OCULTAR O MENU, ZERAR MARCAÇÃO E IDS GUARDADOS
-    //PELO CANCELAR DA MODAL
+    divSelecionar.classList.remove('aberto')
 }
 
 tarefasDom.btApagarFiltradas.addEventListener('click', (evento) => {
@@ -221,10 +219,18 @@ tarefasDom.modalConfirmacaoMulti.addEventListener('click', async (evento) => {
         }
 
         if (tarefasDom.modalConfirmacaoMulti.dataset.origem === 'selecao') {
-            const divSelecionar = evento.target.closest('.divselecionartarefas')
+            const divSelecionar = document.querySelector('.divselecionartarefas')
+            const selecionarTarefas = divSelecionar.querySelector('.selecionartarefas')
+            const btExluir = divSelecionar.querySelector('.excluirselecionadas')
+            const btCancelar = divSelecionar.querySelector('.cancelarselecao')
             const ids = [...tarefasSelecionadasIds()]
             apagarMultiplasTarefas(evento.target, ids)
-            ocultarElemento(divSelecionar)
+            divSelecionar.classList.toggle('aberto')
+            alternarModoSelecao(false)
+            zerarIdsSelecao()
+            btExluir.remove()
+            btCancelar.remove()
+            desocultarElemento(selecionarTarefas)
 
             return
         } 
@@ -242,8 +248,7 @@ tarefasDom.modalConfirmacaoMulti.addEventListener('click', async (evento) => {
     if (evento.target.classList.contains('cancelar')) {
         if (tarefasDom.modalConfirmacaoMulti.dataset.origem === 'selecao') {
             ocultarElemento(tarefasDom.modalConfirmacaoMulti)
-            const elemento = document.querySelector('.divselecionartarefas')
-            cancelarSelecao(elemento)
+            cancelarSelecao()
 
             return
         }
@@ -330,9 +335,13 @@ tarefasDom.descricao.addEventListener('input', () => {
 async function tentarAdicionarTarefa() {
     const titulo = tarefasDom.titulo.value
     const descricao = tarefasDom.descricao.value
-
+    let data = null
     const erroTitulo = validarTitulo(titulo)
     const erroTexto = validarTexto(descricao)
+
+    if (tarefasDom.data.value) {
+        data = tarefasDom.data.value
+    }
 
     if (erroTitulo) {
         adicionarAnimacaoErro(tarefasDom.titulo)
@@ -351,7 +360,7 @@ async function tentarAdicionarTarefa() {
     alterarEstadoBotao(tarefasDom.btAdicionar, true, 'Adicionando...')
 
     try {
-        const novaTarefa = await adicionarTarefa(titulo, descricao)
+        const novaTarefa = await adicionarTarefa(titulo, descricao, data)
 
         idTarefaRecemCriada = novaTarefa.id
         
@@ -361,6 +370,7 @@ async function tentarAdicionarTarefa() {
         
         limparValueElemento(tarefasDom.titulo)
         limparValueElemento(tarefasDom.descricao)
+        limparValueElemento(tarefasDom.data)
         zerarContadoresCriacao()
     } catch (erro) {
         mostrarMensagemErro(tarefasDom.mensagemErroTitulo, tratarErro(erro))
@@ -450,10 +460,15 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
         return
     }
 
+    if (evento.target.closest('#divlista')) {
+        const divSelecionar = document.querySelector('.divselecionartarefas')
+        divSelecionar.classList.remove('aberto')
+    }
+
     if (evento.target.classList.contains('menuselecao')) {
         const elementosLista = evento.target.closest('.elementoslista')
         const divSelecionar = elementosLista.querySelector('.divselecionartarefas')
-        divSelecionar.classList.toggle('oculto')
+        divSelecionar.classList.toggle('aberto')
     }
 
     const elemento = evento.target
@@ -477,6 +492,13 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
         }
 
         tentarSalvarTarefa(id, divPropriedade, divElementos)
+    }
+
+    if (elemento.classList.contains('salvardata')) {
+        const divConteudo = elemento.closest('.divdata')
+        const divElementos = li.querySelector('.divelementosprazo')
+
+        tentarSalvarTarefa(id, divConteudo, divElementos)
     }
     
     if (elemento.classList.contains('botaoopcoes')) {
@@ -506,6 +528,7 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
             const conteudo = divConteudo.querySelector('.conteudo')
             const msgErro = divConteudo.querySelector('.msgerro')
             
+            ocultarElemento(divElementos)
             const input = editarTarefa(divConteudo)
 
             atualizarContadorTarefa(input.value.length, contador, propriedade)
@@ -535,6 +558,18 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
             input.focus()
 
             return
+        }
+
+        if (elemento.closest('.divelementosprazo')) {
+            const divData = li.querySelector('.divdata')
+            const divIntermediaria = divData.querySelector('.divintermediaria')
+            const btSalvar = divIntermediaria.querySelector('.salvardata')
+            const divElementos = elemento.closest('.divelementosprazo')
+        
+            ocultarElemento(divElementos)
+            const input = editarTarefa(divIntermediaria)
+
+            divIntermediaria.insertBefore(input, btSalvar)
         }
 
         if (elemento.closest('.divelementosexcluir')) {
@@ -607,6 +642,41 @@ tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
 })
 
 async function tentarSalvarTarefa(id, divConteudo, divElementos) {
+    if (divConteudo.classList.contains('divdata')) {
+        const input = divConteudo.querySelector('.input-propriedade')
+        const elementoConteudo = divConteudo.querySelector('.conteudo')
+        const salvar = divConteudo.querySelector('.salvardata')
+        const msgErro = divConteudo.querySelector('.msgerrodata')
+        const property = 'data'
+
+        const tarefa = {
+            data: null
+        }
+
+        if (input.value) {
+            tarefa.data = input.value
+        }
+
+        try {
+            const dados = await salvarTarefa(id, property, tarefa) 
+            
+            elementoConteudo.textContent = dados.data
+            
+            ocultarElemento(salvar)
+            desocultarElemento(elementoConteudo)
+            apagarElemento(input)
+            desocultarElemento(divElementos)
+            apagarMensagemErro(msgErro)
+
+        } catch (erro) {
+            mostrarMensagemErro(msgErro, tratarErro(erro))
+        } finally {
+            alterarEstadoBotao(salvar, false, 'Salvar')
+        }
+
+        return
+    } 
+
     const msgErro = divConteudo.querySelector('.msgerro')
     const input = divConteudo.querySelector('.input-propriedade')
     const salvar = divConteudo.querySelector('.salvar')
@@ -655,13 +725,12 @@ async function tentarSalvarTarefa(id, divConteudo, divElementos) {
         ocultarElemento(salvar)
         desocultarElemento(elementoConteudo)
         apagarElemento(input)
-
+        desocultarElemento(divElementos)
         apagarMensagemErro(msgErro)
 
     } catch (erro) {
         mostrarMensagemErro(msgErro, tratarErro(erro))
     } finally {
-        desocultarElemento(divElementos)
         alterarEstadoBotao(salvar, false, 'Salvar')
     }
 
