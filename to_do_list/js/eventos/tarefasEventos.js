@@ -1,11 +1,11 @@
-import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa, atualizarAparenciaFiltros} from "../dom/tarefasDom.js";
+import { tarefasDom, resetarFiltros, atualizarOpcoesOrdem, renderizarTarefas, mostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa, atualizarAparenciaFiltros, obterDataHoje} from "../dom/tarefasDom.js";
 import { perfilDom, mostrarPerfil } from "../dom/perfilDom.js";
 import { carregarTarefas, adicionarTarefa, salvarTarefa, excluirTarefa, atualizarPrioridade, concluirTarefa } from "../servicos/tarefasService.js";
 import { sairUsuarioService, verificarAcessoPagina } from "../servicos/authService.js";
-import { validarTexto, validarTitulo } from "../validacao/validacao.js";
+import { validarTexto, validarTitulo, validarData } from "../validacao/validacao.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
-import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon, alterarEstadoBotao, adicionarAnimacaoErro, removerAnimacaoErro} from "../dom/domUtils.js";
-import { tarefas, obterTarefa, alternarModoSelecao, adicionarIdTarefaSelecionada, zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds} from "../estado/tarefasState.js";
+import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon, alterarEstadoBotao, adicionarAnimacaoErro, removerAnimacaoErro, restaurarBotao} from "../dom/domUtils.js";
+import { tarefas, obterTarefa, alternarModoSelecao, adicionarIdTarefaSelecionada, zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds, definiriTarefasNaoDeletadas, obterTarefasNaoDeletadas} from "../estado/tarefasState.js";
 import { filtrarTarefas } from "../utils/ordenacao.js";
 import { inicializarUsuario } from "../servicos/perfilService.js";
 
@@ -70,9 +70,8 @@ function guardarIdsTarefasFiltradas(tarefasFiltradas) {
     }
 }
 
-function atualizarCarregamentoApagarMultiplo(atual, ids) {
-    const modal = tarefasDom.modalConfirmacaoMulti
-    const carregamento = modal.querySelector('#carregamento')
+function atualizarCarregamentoApagarMultiplo(modal, atual, ids) {
+    const carregamento = modal.querySelector('.carregamento')
     const SpanPorcentagem = carregamento.querySelector('.porcentagem')
     const barraCarregamento = carregamento.querySelector('.divbarracarregamento')
     const total = ids.length
@@ -212,7 +211,7 @@ tarefasDom.modalConfirmacaoMulti.addEventListener('click', async (evento) => {
     if (evento.target.classList.contains('excluir')) {
         if (tarefasDom.modalConfirmacaoMulti.dataset.origem === 'filtro') {
             const tarefasFiltradasCopia = [...idsTarefasFiltradas]
-            apagarMultiplasTarefas(evento.target, tarefasFiltradasCopia)
+            apagarMultiplasTarefas(tarefasDom.modalConfirmacaoMulti, evento.target, tarefasFiltradasCopia)
             idsTarefasFiltradas = []
 
             return
@@ -224,7 +223,7 @@ tarefasDom.modalConfirmacaoMulti.addEventListener('click', async (evento) => {
             const btExluir = divSelecionar.querySelector('.excluirselecionadas')
             const btCancelar = divSelecionar.querySelector('.cancelarselecao')
             const ids = [...tarefasSelecionadasIds()]
-            apagarMultiplasTarefas(evento.target, ids)
+            apagarMultiplasTarefas(tarefasDom.modalConfirmacaoMulti, evento.target, ids)
             divSelecionar.classList.toggle('aberto')
             alternarModoSelecao(false)
             zerarIdsSelecao()
@@ -242,51 +241,80 @@ tarefasDom.modalConfirmacaoMulti.addEventListener('click', async (evento) => {
             idsTarefasFiltradas = []
 
             return
-        }  
-    }
-
-    if (evento.target.classList.contains('cancelar')) {
+        }
+        
         if (tarefasDom.modalConfirmacaoMulti.dataset.origem === 'selecao') {
             ocultarElemento(tarefasDom.modalConfirmacaoMulti)
             cancelarSelecao()
 
             return
         }
-    }
+    } 
 })  
 
-async function apagarMultiplasTarefas(elemento,ids) {
-    const modal = tarefasDom.modalConfirmacaoMulti
-    const carregamento = modal.querySelector('#carregamento')
+tarefasDom.modalResultadoTarefasDeletadas.addEventListener('click', (evento) => {
+    if (evento.target.classList.contains('cancelar')) {
+        ocultarElemento(tarefasDom.modalResultadoTarefasDeletadas)
+        return
+    }
+
+    if (evento.target.classList.contains('excluirnovamente')) {
+        const tarefas = obterTarefasNaoDeletadas()
+        apagarMultiplasTarefas(tarefasDom.modalResultadoTarefasDeletadas,evento.target, tarefas)
+
+        return
+    }
+})
+
+async function apagarMultiplasTarefas(modal, elemento,ids) {
+    const carregamento = modal.querySelector('.carregamento')
 
     const barraCarregamento = carregamento.querySelector('.divbarracarregamento')
     const porcentagem = carregamento.querySelector('.porcentagem')
+
+    const elementoOriginal = elemento.innerHTML
     
     desocultarElemento(carregamento)
-    desocultarElemento(tarefasDom.modalConfirmacaoMulti)
+    desocultarElemento(modal)
     alterarEstadoBotao(elemento, true, 'Excluindo...')
 
+    let tarefasNaoDeletadas = []
     let cont = 0
 
     for (const id of ids) {
         
         try {
-            await excluirTarefa(id)
             cont++
-            atualizarCarregamentoApagarMultiplo(cont, ids)
+
+            atualizarCarregamentoApagarMultiplo(modal, cont, ids)
+
+            await excluirTarefa(id)
         } catch (erro) {
             console.log(erro)
+            tarefasNaoDeletadas.push(id)
         }
+
+    }
+
+    if (tarefasNaoDeletadas.length > 0) {
+        const modalResultados = tarefasDom.modalResultadoTarefasDeletadas
+        const aviso = modalResultados.querySelector('p.aviso')
+        aviso.textContent = `${tarefasNaoDeletadas.length} tarefas não foram deletadas.`
+        definiriTarefasNaoDeletadas(tarefasNaoDeletadas)
+        tarefasNaoDeletadas = []
+        desocultarElemento(modalResultados)
     }
 
     barraCarregamento.innerHTML = ''
     porcentagem.innerHTML = '0%'
 
+    idsTarefasFiltradas = []
+
     prepararTarefasParaRenderizar()
     cont = 0
     
     ocultarElemento(tarefasDom.modalConfirmacaoMulti)
-    alterarEstadoBotao(elemento, false, 'Excluir')
+    restaurarBotao(elemento, elementoOriginal)
     ocultarElemento(carregamento)
 }
 
@@ -332,6 +360,11 @@ tarefasDom.descricao.addEventListener('input', () => {
     apagarMensagemErro(tarefasDom.mensagemErroDescricao)
 })
 
+tarefasDom.data.addEventListener('input', () => {
+    removerAnimacaoErro(tarefasDom.data)
+    apagarMensagemErro(tarefasDom.mensagemErroData)
+})
+
 async function tentarAdicionarTarefa() {
     const titulo = tarefasDom.titulo.value
     const descricao = tarefasDom.descricao.value
@@ -340,7 +373,15 @@ async function tentarAdicionarTarefa() {
     const erroTexto = validarTexto(descricao)
 
     if (tarefasDom.data.value) {
-        data = tarefasDom.data.value
+        const dataValidada = validarData(tarefasDom.data.value)
+        
+        if (dataValidada) {
+            adicionarAnimacaoErro(tarefasDom.data)
+            mostrarMensagemErro(tarefasDom.mensagemErroData, dataValidada)
+            return
+        } else {
+           data = tarefasDom.data.value
+        }
     }
 
     if (erroTitulo) {
@@ -357,6 +398,8 @@ async function tentarAdicionarTarefa() {
         return
     }
 
+    const elementoOriginal = tarefasDom.btAdicionar.innerHTML
+    
     alterarEstadoBotao(tarefasDom.btAdicionar, true, 'Adicionando...')
 
     try {
@@ -459,12 +502,16 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
     if (verificarModoSelecao(evento.target)) {
         return
     }
+    
+    if (evento.target.closest('#divlista') && !evento.target.classList.contains('menuselecao')) {
+        if (estadoModoSelecao()) {
+            return
+        }
 
-    if (evento.target.closest('#divlista')) {
         const divSelecionar = document.querySelector('.divselecionartarefas')
         divSelecionar.classList.remove('aberto')
     }
-
+    
     if (evento.target.classList.contains('menuselecao')) {
         const elementosLista = evento.target.closest('.elementoslista')
         const divSelecionar = elementosLista.querySelector('.divselecionartarefas')
@@ -473,12 +520,20 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
 
     const elemento = evento.target
     const li = evento.target.closest('li')
-
+    
     if (!li) {
         return
     }
 
     const id = li.dataset.id 
+
+    const areaMenu = li.querySelector('.areamenu')
+    
+    if (!areaMenu.contains(evento.target)) {
+        const divOpcao = areaMenu.querySelector('.divopcao')
+        
+        divOpcao.classList.remove('aberto')
+    }
 
     if (elemento.classList.contains('salvar')) {
         const divPropriedade = elemento.closest('.propriedade')
@@ -566,6 +621,7 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
             const btSalvar = divIntermediaria.querySelector('.salvardata')
             const divElementos = elemento.closest('.divelementosprazo')
         
+            desocultarElemento(divIntermediaria)
             ocultarElemento(divElementos)
             const input = editarTarefa(divIntermediaria)
 
@@ -573,7 +629,7 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
         }
 
         if (elemento.closest('.divelementosexcluir')) {
-            const divOpcao = document.querySelector('.divopcao')
+            const divOpcao = li.querySelector('.divopcao')
             const mensagem = tarefasDom.modalConfirmacao.querySelector('.titulotarefa')
             const msgErro = li.querySelector('.msgerro-api')
 
@@ -593,14 +649,6 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
 
             return
         }
-    }
-
-    const areaMenu = li.querySelector('.areamenu')
-    
-    if (!areaMenu.contains(evento.target)) {
-        const divOpcao = areaMenu.querySelector('.divopcao')
-        
-        divOpcao.classList.remove('aberto')
     }
 })
 
@@ -645,6 +693,9 @@ async function tentarSalvarTarefa(id, divConteudo, divElementos) {
     if (divConteudo.classList.contains('divdata')) {
         const input = divConteudo.querySelector('.input-propriedade')
         const elementoConteudo = divConteudo.querySelector('.conteudo')
+        const spanVencimento = divConteudo.querySelector('.spanvencimento')
+        const divIntermediaria = divConteudo.querySelector('.divintermediaria')
+        const iconPrazo = divConteudo.querySelector('.iconprazo')
         const salvar = divConteudo.querySelector('.salvardata')
         const msgErro = divConteudo.querySelector('.msgerrodata')
         const property = 'data'
@@ -660,8 +711,40 @@ async function tentarSalvarTarefa(id, divConteudo, divElementos) {
         try {
             const dados = await salvarTarefa(id, property, tarefa) 
             
-            elementoConteudo.textContent = dados.data
+            elementoConteudo.textContent = `Prazo: ${dados.data}`
             
+            const li = divConteudo.closest('li')
+            const checkbox = li.querySelector('.checkbox')
+            
+            const hoje = obterDataHoje()
+            const prazo = dados.data
+            
+            if (prazo < hoje && !checkbox.checked) {  
+                spanVencimento.textContent = 'Expirada'
+                elementoConteudo.classList.add('prazovencidotexto')
+                iconPrazo.classList.remove('icon', 'fa-regular', 'fa-clock')
+                iconPrazo.classList.add('fa-solid', 'fa-circle-exclamation')
+                divIntermediaria.classList.add('prazovencidodiv')
+                divIntermediaria.insertBefore(spanVencimento, salvar)
+            } else {
+                spanVencimento.textContent = ''
+                elementoConteudo.classList.remove('prazovencidotexto')
+                iconPrazo.classList.remove('icon', 'fa-solid', 'fa-circle-exclamation')
+                iconPrazo.classList.add('fa-regular', 'fa-clock', 'icon')
+                divIntermediaria.classList.remove('prazovencidodiv', 'concluido')
+            }
+            
+            if (prazo <= hoje && checkbox.checked) {
+                iconPrazo.classList.remove('fa-regular', 'fa-clock', 'icon')
+                iconPrazo.classList.add('fa-regular', 'fa-circle-check')
+                divIntermediaria.classList.add('concluido')
+            }
+
+            if (!dados.data) {
+                divIntermediaria.classList.add('oculto')
+                elementoConteudo.textContent = ''
+            }
+
             ocultarElemento(salvar)
             desocultarElemento(elementoConteudo)
             apagarElemento(input)

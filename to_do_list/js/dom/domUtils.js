@@ -37,10 +37,15 @@ function alterarEstadoBotao(botao, estado, texto) {
     botao.textContent = texto
 }
 
+function restaurarBotao(botao, html) {
+    botao.disabled = false
+    botao.innerHTML = html
+}
+
 function criarIcon(classe) {
     const icon = document.createElement('i')
     icon.classList.add('fa-solid', classe)
     return icon
 }
 
-export {mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon, adicionarAnimacaoErro, removerAnimacaoErro, alterarEstadoBotao}
+export {mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon, adicionarAnimacaoErro, removerAnimacaoErro, alterarEstadoBotao, restaurarBotao}

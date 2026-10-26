@@ -2,6 +2,7 @@ let tarefas = []
 
 let modoSelecaoAtivo = false
 let idsTarefasSelecionadas = new Set()
+let tarefasNaoDeletadas = []
 
 function alternarModoSelecao(novoEstado) {
     modoSelecaoAtivo = novoEstado
@@ -25,6 +26,14 @@ function estadoModoSelecao() {
 
 function tarefasSelecionadasIds() {
     return idsTarefasSelecionadas
+}
+
+function definiriTarefasNaoDeletadas(tarefas) {
+    tarefasNaoDeletadas = tarefas
+}
+
+function obterTarefasNaoDeletadas() {
+    return tarefasNaoDeletadas
 }
 
 function definirTarefas(tarefasNovas) {
@@ -79,4 +88,4 @@ function obterTarefa(id) {
     return tarefas.find(tarefa => tarefa.id === id)
 }
 
-export {tarefas, definirTarefas, adicionarTarefaEstado, apagarTarefa, atualizarPrioridadeEstado, concluirTarefaEstado, editarTarefaEstado, obterTarefa, adicionarIdTarefaSelecionada, alternarModoSelecao,zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds}
+export {tarefas, definirTarefas, adicionarTarefaEstado, apagarTarefa, atualizarPrioridadeEstado, concluirTarefaEstado, editarTarefaEstado, obterTarefa, adicionarIdTarefaSelecionada, alternarModoSelecao,zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds, definiriTarefasNaoDeletadas, obterTarefasNaoDeletadas}

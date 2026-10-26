@@ -67,4 +67,12 @@ function validarCampoSenhaLogin(senha) {
     return null
 }
 
-export {validarTitulo, validarTexto, validarSenha, validarNome, validarCampoEmailLogin as validarCampoEmailLogin, validarCampoSenhaLogin}
+function validarData(valor) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+        return 'Formato de data inválido.';
+    }
+
+    return false
+}
+
+export {validarTitulo, validarTexto, validarSenha, validarNome, validarCampoEmailLogin as validarCampoEmailLogin, validarCampoSenhaLogin, validarData}

@@ -10,6 +10,7 @@ const tarefasDom = {
     lista: document.querySelector('#lista'),
     mensagemErroTitulo: document.querySelector('#errotitulo'),
     mensagemErroDescricao: document.querySelector('#errodescricao'),
+    mensagemErroData: document.querySelector('#msgerrodata'),
     contadorTitulo: document.querySelector('#contadortitulo'),
     contadorDescricao: document.querySelector('#contadordescricao'),
     containerDeFiltros: document.querySelector('#containerfiltros'),
@@ -26,7 +27,8 @@ const tarefasDom = {
     ordemOpcDois: document.querySelector('.opcdois'),
     mostradorEstadoTarefas: document.querySelector('#mostrarestadotarefa'),
     modalConfirmacao: document.querySelector('#modalconfirmacao'),
-    modalConfirmacaoMulti: document.querySelector('#modalconfirmacaomultitarefas')
+    modalConfirmacaoMulti: document.querySelector('#modalconfirmacaomultitarefas'),
+    modalResultadoTarefasDeletadas: document.querySelector('#modalresultadotarefasdeletadas')
 }
 
 function aplicarAparenciaErro(elemento) {
@@ -408,30 +410,55 @@ function criarTarefaElemento(tarefa) {
     btEditarPrazo.textContent = 'Prazo'
     btEditarPrazo.appendChild(iconEditPrazo)
 
+    const btSalvarData = document.createElement('button')
+    btSalvarData.classList.add('salvardata', 'oculto')
+    btSalvarData.textContent = 'Salvar'
+
     const iconPrazo = document.createElement('i')
-    iconPrazo.classList.add('fa-regular', 'fa-clock', 'icon')
+    iconPrazo.classList.add('fa-regular', 'fa-clock', 'icon', 'iconprazo')
 
     const divIntermediariaData = document.createElement('div')
     divIntermediariaData.classList.add('divintermediaria')
 
     const spanData = document.createElement('span')
+    const spanVencida = document.createElement('span')
+    spanVencida.classList.add('spanvencimento')
+
+    divIntermediariaData.appendChild(iconPrazo)
+    divIntermediariaData.appendChild(spanData)
+    divIntermediariaData.appendChild(spanVencida)
+
     if (tarefa.data) {
         spanData.textContent = `Prazo: ${tarefa.data}`
-        spanData.appendChild(iconPrazo)
+
+        const hoje = obterDataHoje()
+        const prazo = tarefa.data
+        
+        if (prazo < hoje && !tarefa.status) {
+            spanVencida.textContent = 'Expirada'
+            spanData.classList.add('prazovencidotexto')
+            iconPrazo.classList.remove('icon','fa-regular', 'fa-clock')
+            iconPrazo.classList.add('fa-solid', 'fa-circle-exclamation')
+            divIntermediariaData.classList.add('prazovencidodiv')
+        } else {
+            iconPrazo.classList.add('fa-regular', 'fa-clock', 'icon')
+        }
+
+        if (prazo <= hoje && tarefa.status) {
+            iconPrazo.classList.remove('fa-regular', 'fa-clock', 'icon')
+            iconPrazo.classList.add('fa-regular', 'fa-circle-check')
+            divIntermediariaData.classList.add('concluido')
+        }
+
     } else {
-        spanData.classList.add('oculto')
+        divIntermediariaData.classList.add('oculto')
     }
 
     spanData.classList.add('conteudo')
 
-    const btSalvarData = document.createElement('button')
-    btSalvarData.classList.add('salvardata', 'oculto')
-    btSalvarData.textContent = 'Salvar'
-
     const spanMsgErroData = document.createElement('span')
     spanMsgErroData.classList.add('msgerrodata', 'erro')
 
-    divIntermediariaData.appendChild(spanData)
     divIntermediariaData.appendChild(btSalvarData)
 
     divData.appendChild(divIntermediariaData)
@@ -448,10 +475,6 @@ function criarTarefaElemento(tarefa) {
     divDtConclusao.appendChild(iconCalendarioDois)
     divDtConclusao.appendChild(spanPropriedadeDtConclusao)
     divDtConclusao.appendChild(spanDtConclusao)
-
-    const menu = document.createElement('div')
-    menu.id = 'divmenu'
-    menu.classList.add('menu')
 
     const divOpcao = document.createElement('div')
 
@@ -557,6 +580,15 @@ function criarTarefaElemento(tarefa) {
     return li
 }
 
+function obterDataHoje() {
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = String(hoje.getMonth() + 1).padStart(2, '0');
+    const dia = String(hoje.getDate()).padStart(2, '0');
+
+    return `${ano}-${mes}-${dia}`;
+}
+
 function editarTarefa(div) {
     if (div.classList.contains('divintermediaria')) {
         const elementoConteudo = div.querySelector('.conteudo')
@@ -599,4 +631,4 @@ function editarTarefa(div) {
 }
 
 
-export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa, atualizarAparenciaFiltros}
+export {tarefasDom, adicionarNaLista, resetarFiltros, atualizarOpcoesOrdem, criarTarefaElemento, renderizarTarefas, mostrarEstadoTarefa, limparMostrarEstadoTarefa, pegarFiltros, editarTarefa, limparLista, atualizarContadorCriacao, zerarContadoresCriacao, atualizarContadorTarefa, atualizarAparenciaFiltros, obterDataHoje}

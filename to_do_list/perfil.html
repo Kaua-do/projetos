@@ -117,6 +117,15 @@
             background-color: #F4F6FB;
         }
 
+        .prazovencidotexto {
+            text-decoration: line-through;
+            color: red;
+        }
+
+        .prazovencidodiv {
+            color: red;
+        }
+
         .ativo {
             background-color: #EFF6FF;
             color: #1D4ED8;
@@ -172,7 +181,7 @@
             font-weight: 600;
         }
 
-        #modalconfirmacao, #modalconfirmacaomultitarefas {
+        #modalconfirmacao, #modalconfirmacaomultitarefas, #modalresultadotarefasdeletadas {
             position: fixed;
             inset: 0;
             z-index: 1000;
@@ -184,7 +193,7 @@
             align-items: center;
         }
 
-        #modalconfirmacao.oculto, #modalconfirmacaomultitarefas.oculto, #containerfiltros.oculto, #divreset.oculto {
+        #modalconfirmacao.oculto, #modalconfirmacaomultitarefas.oculto, #containerfiltros.oculto, #divreset.oculto, #modalresultadotarefasdeletadas.oculto {
             display: none;
         }
 
@@ -200,7 +209,7 @@
             margin-top: 0px;
         }
 
-        .conteudomodal i {
+        .tituloaviso i {
             color: var(--cor-erro);
         }
 
@@ -213,9 +222,10 @@
             flex-direction: row-reverse;
             justify-content: start;
             gap: 10px;
+            font-size: 1.4em;
         }
 
-        .conteudomodal > #carregamento {
+        .conteudomodal > .carregamento {
             width: 100%;
             height: 20px;
             margin-bottom: 10px;
@@ -243,7 +253,7 @@
             background-color: #B91C1C;
         }
 
-        #informacaotarefa {
+        .informacaotarefa {
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -254,16 +264,16 @@
             margin-bottom: 8px;
         }
 
-        #informacaotarefa .titulotarefa, .aviso {
+        .informacaotarefa .titulotarefa, .aviso {
             margin-top: 0px;
             margin-bottom: 0px;
         }
 
-        #informacaotarefa .titulotarefa {
+        .informacaotarefa .titulotarefa {
             color: var(--cor-texto);
         }
 
-        #informacaotarefa .aviso {
+        .informacaotarefa .aviso {
             font-size: 0.8em;
             color: #172033;
         }
@@ -298,7 +308,17 @@
             width: 78px;
         }
 
-        .botoesmodal .excluir:hover {
+        .excluirnovamente {
+            background-color: #DC2626;
+            color: white;
+            font-weight: 600;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 5px;
+            width: 150px;
+        }
+
+        .botoesmodal .excluir:hover, .excluirnovamente:hover {
             background-color: #B91C1C;
         }
 
@@ -306,7 +326,7 @@
             color: white;
         }
 
-        .botoesmodal .cancelar:active, .excluir:active {
+        .botoesmodal .cancelar:active, .excluir:active, .excluirnovamente:active {
             transform: scale(0.99);
         }
 
@@ -475,12 +495,14 @@
             justify-content: end;
         }
 
-        #errotitulo, #errodescricao {
+        #errotitulo, #errodescricao, #msgerrodata {
             text-align: start;
             font-size: 0.8em;
             margin: 0px 0px 0px 3px;
             height: 20%;
         }
+
+        
 
         #adicionar {
             margin-left: 2px;
@@ -623,7 +645,7 @@
             transform: scale(0.99);
         }
 
-        #carregamento {
+        .carregamento {
             position: relative;
         }
 
@@ -771,7 +793,7 @@
             top: 30px;
             right: 35px;
             width: 130px;
-            z-index: 1;
+            z-index: 1000;
             opacity: 0;
             visibility: hidden;
             transform: translateY(-5px);
@@ -899,8 +921,6 @@
             display: flex;
             justify-content: start;
             align-items: center;
-            flex-direction: row-reverse;
-            gap: 5px;
             font-size: 0.75em;
         }
 
@@ -910,10 +930,17 @@
 
         .divdata .divintermediaria {
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 4px;
         }
 
-        
+        .divdata .divintermediaria.oculto {
+            display: none;
+        }
+
+        .divdata i {
+            font-size: 0.75em;
+        }
 
         #lista li .container .propriedade .input-descricao {
             width: 180px;
@@ -961,17 +988,38 @@
 </head>
 <body>
     <main>
+        <div id="modalresultadotarefasdeletadas" class="oculto">
+            <div class="conteudomodal">
+                <h2 class="tituloaviso">Não foi possível exluir todas as tarefas.<i class="fa-solid fa-triangle-exclamation"></i> </h2>
+
+                <p class="mensagemconfirmacao">Deseja tentar novamente?</p>
+
+                <div class="informacaotarefa">
+                    <p class="aviso"></p>
+                </div>
+
+                <div class="carregamento oculto">
+                    <div class="divporcentagem"><span class="porcentagem">0%</span></div>
+                    <div class="divbarracarregamento"></div>
+                </div>
+
+                <div class="botoesmodal">
+                    <button class="cancelar">Cancelar</button>
+                    <button class="excluirnovamente"><i class="fa-solid fa-arrows-rotate"></i> Tentar novamente</button>
+                </div>
+            </div>
+        </div>
         <div id="modalconfirmacaomultitarefas" class="oculto">
             <div class="conteudomodal">
                 <h2 class="tituloaviso"><i class="fa-solid fa-triangle-exclamation"></i></h2>
 
-                <p id="mensagemconfirmacao">Tem que certeza que deseja excluir essas tarefas?</p>
+                <p class="mensagemconfirmacao">Tem que certeza que deseja excluir essas tarefas?</p>
 
-                <div id="informacaotarefa">
+                <div class="informacaotarefa">
                     <p class="aviso">Está ação não pode ser desfeita.</p>
                 </div>
 
-                <div id="carregamento" class="oculto">
+                <div class="carregamento oculto">
                     <div class="divporcentagem"><span class="porcentagem">0%</span></div>
                     <div class="divbarracarregamento"></div>
                 </div>
@@ -986,7 +1034,7 @@
             <div class="conteudomodal">
                 <h2><i class="fa-solid fa-triangle-exclamation"></i>  Excluir tarefa?</h2>
 
-                <p id="mensagemconfirmacao">Tem que certeza que deseja excluir essa tarefa?</p>
+                <p class="mensagemconfirmacao">Tem que certeza que deseja excluir essa tarefa?</p>
 
                 <div id="informacaotarefa">
                     <h3 class="titulotarefa"></h3>
@@ -1015,7 +1063,6 @@
             </div>
         </div>
         <div id="areacriacao">
-            <input type="date">
             <i class="fa-solid fa-circle-plus icon"></i>
             <span class="nomearea">Nova tarefa</span>
             <div class="campo titulo">
@@ -1043,6 +1090,7 @@
             <div class="campo data">
                 <p>Prazo (Opicional)</p>
                 <input type="date" id="data">
+                <span id="msgerrodata" class="erro oculto"></span>
             </div>
             <button id="adicionar">Adicionar</button>
         </div>
