@@ -5,7 +5,7 @@ import { sairUsuarioService, verificarAcessoPagina } from "../servicos/authServi
 import { validarTexto, validarTitulo, validarData } from "../validacao/validacao.js";
 import { tratarErro } from "../erros/tratamentoErro.js";
 import { mostrarMensagemErro, apagarMensagemErro, limparValueElemento, ocultarElemento, desocultarElemento, apagarElemento, criarIcon, alterarEstadoBotao, adicionarAnimacaoErro, removerAnimacaoErro, restaurarBotao} from "../dom/domUtils.js";
-import { tarefas, obterTarefa, alternarModoSelecao, adicionarIdTarefaSelecionada, zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds, definiriTarefasNaoDeletadas, obterTarefasNaoDeletadas} from "../estado/tarefasState.js";
+import { tarefas, obterTarefa, alternarModoSelecao, adicionarIdTarefaSelecionada, zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds, definirTarefasNaoDeletadas, obterTarefasNaoDeletadas} from "../estado/tarefasState.js";
 import { filtrarTarefas } from "../utils/ordenacao.js";
 import { inicializarUsuario } from "../servicos/perfilService.js";
 
@@ -19,7 +19,7 @@ let tarefaPendenteExclusao = {
 
 let idTarefaRecemCriada = null
 
-let idsTarefasFiltradas = []
+let idsTarefasFiltradas = [999]
 
 async function iniciar() {
     try {
@@ -255,18 +255,23 @@ tarefasDom.modalConfirmacaoMulti.addEventListener('click', async (evento) => {
 tarefasDom.modalResultadoTarefasDeletadas.addEventListener('click', (evento) => {
     if (evento.target.classList.contains('cancelar')) {
         ocultarElemento(tarefasDom.modalResultadoTarefasDeletadas)
+
         return
     }
 
     if (evento.target.classList.contains('excluirnovamente')) {
         const tarefas = obterTarefasNaoDeletadas()
-        apagarMultiplasTarefas(tarefasDom.modalResultadoTarefasDeletadas,evento.target, tarefas)
+        apagarMultiplasTarefas(tarefasDom.modalResultadoTarefasDeletadas, evento.target, tarefas)
 
         return
     }
 })
 
-async function apagarMultiplasTarefas(modal, elemento,ids) {
+async function apagarMultiplasTarefas(modal, elemento, ids) {
+    const cancelar = modal.querySelector('.cancelar')
+
+    cancelar.disabled = true
+    console.log(cancelar)
     const carregamento = modal.querySelector('.carregamento')
 
     const barraCarregamento = carregamento.querySelector('.divbarracarregamento')
@@ -293,17 +298,28 @@ async function apagarMultiplasTarefas(modal, elemento,ids) {
             console.log(erro)
             tarefasNaoDeletadas.push(id)
         }
-
     }
-
+    
     if (tarefasNaoDeletadas.length > 0) {
         const modalResultados = tarefasDom.modalResultadoTarefasDeletadas
         const aviso = modalResultados.querySelector('p.aviso')
+
         aviso.textContent = `${tarefasNaoDeletadas.length} tarefas não foram deletadas.`
-        definiriTarefasNaoDeletadas(tarefasNaoDeletadas)
-        tarefasNaoDeletadas = []
+
+        definirTarefasNaoDeletadas(tarefasNaoDeletadas)
         desocultarElemento(modalResultados)
+
+        ocultarElemento(tarefasDom.modalConfirmacaoMulti)
+    } else {
+        ocultarElemento(modal)
+        ocultarElemento(tarefasDom.modalResultadoTarefasDeletadas)
+
+        tarefasNaoDeletadas = []
+
+        definirTarefasNaoDeletadas([])
     }
+
+    cancelar.disabled = false
 
     barraCarregamento.innerHTML = ''
     porcentagem.innerHTML = '0%'
@@ -311,9 +327,9 @@ async function apagarMultiplasTarefas(modal, elemento,ids) {
     idsTarefasFiltradas = []
 
     prepararTarefasParaRenderizar()
+
     cont = 0
     
-    ocultarElemento(tarefasDom.modalConfirmacaoMulti)
     restaurarBotao(elemento, elementoOriginal)
     ocultarElemento(carregamento)
 }
@@ -643,7 +659,6 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
             tarefaPendenteExclusao.msgErro = msgErro
             tarefaPendenteExclusao.liDom = li
 
-            ocultarElemento(divOpcao)
             desocultarElemento(tarefasDom.modalConfirmacao)
             mensagem.textContent = tarefa.titulo
 
@@ -653,8 +668,8 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
 })
 
 tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
-
     const elemento = evento.target
+    const botoesModal = elemento.closest('.botoesmodal')
     
     if (elemento.classList.contains('cancelar')) {
         const mensagem = tarefasDom.modalConfirmacao.querySelector('.titulotarefa')
@@ -671,11 +686,16 @@ tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
 
         tarefaPendenteExclusao.liDom.classList.add('removendotarefa')
 
+        const cancelar = botoesModal.querySelector('.cancelar')
+        
+        cancelar.disabled = true
+
         try {
             await excluirTarefa(tarefaPendenteExclusao.id)
             
             prepararTarefasParaRenderizar()
         } catch (erro) {
+            tarefaPendenteExclusao.liDom.classList.remove('removendotarefa')
             mostrarMensagemErro(tarefaPendenteExclusao.msgErro, tratarErro(erro))
         } finally {
             ocultarElemento(tarefasDom.modalConfirmacao)
@@ -683,6 +703,7 @@ tarefasDom.modalConfirmacao.addEventListener('click', async (evento) => {
             tarefaPendenteExclusao.msgErro = null
             tarefaPendenteExclusao.liDom = null
             alterarEstadoBotao(elemento, false, 'Excluir')
+            cancelar.disabled = false
         }
         
         return

@@ -28,7 +28,7 @@ function tarefasSelecionadasIds() {
     return idsTarefasSelecionadas
 }
 
-function definiriTarefasNaoDeletadas(tarefas) {
+function definirTarefasNaoDeletadas(tarefas) {
     tarefasNaoDeletadas = tarefas
 }
 
@@ -88,4 +88,4 @@ function obterTarefa(id) {
     return tarefas.find(tarefa => tarefa.id === id)
 }
 
-export {tarefas, definirTarefas, adicionarTarefaEstado, apagarTarefa, atualizarPrioridadeEstado, concluirTarefaEstado, editarTarefaEstado, obterTarefa, adicionarIdTarefaSelecionada, alternarModoSelecao,zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds, definiriTarefasNaoDeletadas, obterTarefasNaoDeletadas}
+export {tarefas, definirTarefas, adicionarTarefaEstado, apagarTarefa, atualizarPrioridadeEstado, concluirTarefaEstado, editarTarefaEstado, obterTarefa, adicionarIdTarefaSelecionada, alternarModoSelecao,zerarIdsSelecao, estadoModoSelecao, tarefasSelecionadasIds, definirTarefasNaoDeletadas, obterTarefasNaoDeletadas}
