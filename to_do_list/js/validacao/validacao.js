@@ -72,6 +72,18 @@ function validarData(valor) {
         return 'Formato de data inválido.';
     }
 
+    const [ano, mes, dia] = valor.split('-').map(Number)
+
+    const data = new Date(ano, mes - 1, dia)
+
+    if (
+        data.getFullYear() !== ano ||
+        data.getMonth() !== mes - 1 ||
+        data.getDate() !== dia
+    ) {
+        return 'Data inexistente.'
+    }
+
     return false
 }
 

@@ -595,6 +595,7 @@ function editarTarefa(div) {
         const input = document.createElement('input')
         input.classList.add('input-propriedade')
         input.type = 'date'
+        input.value = elementoConteudo.textContent.replace('Prazo: ', '').trim()
 
         elementoConteudo.classList.add('oculto')
         const btSalvar = div.querySelector('.salvardata')

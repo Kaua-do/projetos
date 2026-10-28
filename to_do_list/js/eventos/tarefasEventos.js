@@ -19,7 +19,7 @@ let tarefaPendenteExclusao = {
 
 let idTarefaRecemCriada = null
 
-let idsTarefasFiltradas = [999]
+let idsTarefasFiltradas = []
 
 async function iniciar() {
     try {
@@ -645,7 +645,6 @@ tarefasDom.divLista.addEventListener('click', async (evento) => {
         }
 
         if (elemento.closest('.divelementosexcluir')) {
-            const divOpcao = li.querySelector('.divopcao')
             const mensagem = tarefasDom.modalConfirmacao.querySelector('.titulotarefa')
             const msgErro = li.querySelector('.msgerro-api')
 
@@ -726,8 +725,17 @@ async function tentarSalvarTarefa(id, divConteudo, divElementos) {
         }
 
         if (input.value) {
+            const dataValidada = validarData(input.value)
+
+            if (dataValidada) {
+                mostrarMensagemErro(msgErro, dataValidada)
+                return
+            }
+
             tarefa.data = input.value
         }
+
+        alterarEstadoBotao(salvar, true, 'Salvando...')
 
         try {
             const dados = await salvarTarefa(id, property, tarefa) 
@@ -764,6 +772,8 @@ async function tentarSalvarTarefa(id, divConteudo, divElementos) {
             if (!dados.data) {
                 divIntermediaria.classList.add('oculto')
                 elementoConteudo.textContent = ''
+            } else {
+                divIntermediaria.classList.remove('oculto')
             }
 
             ocultarElemento(salvar)

@@ -32,8 +32,6 @@ async function deletarTarefaApi(id) {
     .delete()
     .eq('id', id)
 
-    
-
     if (error) {
         throw traduzirErro(error, 'api')
     }

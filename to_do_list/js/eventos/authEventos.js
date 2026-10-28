@@ -34,7 +34,7 @@ document.addEventListener('click', (evento) => {
 
     if (elemento.classList.contains('cadastro')) {
 
-        alternarFormulario(domAuth.telaLogin, domAuth.telaCadastro, 'login')
+        alternarFormulario(domAuth.telaLogin, domAuth.telaCadastro, 'Cadastro')
         
         return
     }
@@ -71,10 +71,10 @@ async function alternarFormulario(sai, entra, destinatario) {
 
     sai.classList.add(classeSaida)
     entra.classList.add(classeEntrada)
-    
-    await aguardarAnimacao(sai, nomeAnimacaoSaida)
-    
+
     ocultarElemento(sai)
+
+    await aguardarAnimacao(sai, nomeAnimacaoSaida)
     
     sai.classList.remove(classeSaida)
     entra.classList.remove(classeEntrada)
@@ -188,6 +188,7 @@ domAuth.btCadastrar.addEventListener('click', async () => {
         domAuth.confirmarSenhaCadastro.value = ''
 
         apagarMensagemErro(domAuth.mensagemErroCadastro)
+        desocultarElemento(domAuth.mensagemSucessoCadastro)
     } catch (erro) {
         mostrarMensagemErro(domAuth.mensagemErroCadastro, tratarErro(erro))
     } finally {
